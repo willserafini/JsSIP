@@ -16732,8 +16732,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var h = request.getHeader('expires');
 
       if (h === undefined || h === null) {
-        h = '900'; // Missed header Expires. RFC 6665 3.1.1. Set default expires value
-
+        // Missed header Expires. RFC 6665 3.1.1. Set default expires value  
+        h = '900';
         debug("Missed expires header. Set by default ".concat(h));
       }
 
@@ -22821,13 +22821,14 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "unsubscribe",
     value: function unsubscribe() {
+      var body = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
       debug('unsubscribe()');
 
       this._dialogTerminated('send un-subscribe');
 
       var headers = ["Event: ".concat(this.event_name), 'Expires: 0'];
 
-      this._send(null, headers);
+      this._send(body, headers);
     }
   }, {
     key: "state",

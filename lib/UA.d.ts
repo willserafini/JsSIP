@@ -6,6 +6,8 @@ import {AnswerOptions, AnyListener, Originator, RTCSession, RTCSessionEventMap, 
 import {IncomingRequest, IncomingResponse, OutgoingRequest} from './SIPMessage'
 import {Message, SendMessageOptions} from './Message'
 import {Registrator} from './Registrator'
+import {Notifier} from './Notifier'
+import {Subscriber} from './Subscriber'
 import {URI} from './URI'
 import {causes} from './Constants'
 
@@ -103,6 +105,7 @@ export type IncomingMessageListener = (event: IncomingMessageEvent) => void;
 export type OutgoingMessageListener = (event: OutgoingMessageEvent) => void;
 export type MessageListener = IncomingMessageListener | OutgoingMessageListener;
 export type SipEventListener = <T = any>(event: { event: T; request: IncomingRequest; }) => void
+export type SipSubscribeListener = <T = any>(event: { event: T; request: IncomingRequest; }) => void
 
 export interface UAEventMap {
   connecting: UAConnectingListener;
@@ -115,6 +118,7 @@ export interface UAEventMap {
   newRTCSession: RTCSessionListener;
   newMessage: MessageListener;
   sipEvent: SipEventListener;
+  newSubscribe: SipSubscribeListener;
 }
 
 export interface UAContactOptions {
@@ -128,6 +132,44 @@ export interface UAContact {
   uri?: string;
 
   toString(options?: UAContactOptions): string
+}
+
+export interface Credential {
+  authorization_user: string;
+  password: string;
+}
+
+export interface RequestParams {
+  from_uri: URI;
+  from_display_name?: string;
+  from_tag: string;
+  to_uri: URI;
+  to_display_name?: string;
+  to_tag?: string;
+  call_id: string;
+  cseq: number;
+}
+
+export interface SubscriberParams {
+  from_uri: URI;
+  from_display_name?: string;
+  to_uri: URI;
+  to_display_name?: string;
+}
+
+export interface SubscriberOptions {
+  event_name: string;
+  accept: string;
+  expires: number;
+  content_type: string;
+  params: SubscriberParams;
+  credential: Credential;
+}
+
+export interface NotifierOptions {
+  subscribe: IncomingRequest;
+  content_type: string;
+  pending?: boolean;
 }
 
 declare enum UAStatus {
@@ -165,6 +207,12 @@ export class UA extends EventEmitter {
   call(target: string, options?: CallOptions): RTCSession;
 
   sendMessage(target: string | URI, body: string, options?: SendMessageOptions): Message;
+
+  sendRequest(method: string, target: string, params: RequestParams, headers?: string[], body?: string, handlers?: any, credential?: Credential): void;
+
+  subscriber(target: string, options: SubscriberOptions): Subscriber;
+
+  notifier(options: NotifierOptions): Notifier;
 
   terminateSessions(options?: TerminateOptions): void;
 

@@ -16654,9 +16654,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     _this.content_type = content_type;
     _this.expires = parseInt(subscribe.getHeader('expires'));
     _this.credential = credential;
-    var user = subscribe.to.uri.user;
-    var domain = subscribe.to.uri.host;
-    _this.contact = "<sip:".concat(user, "@").concat(domain, ";transport=ws>");
+    _this.contact = "<sip:".concat(subscribe.to.uri.user, "@").concat(Utils.createRandomToken(12), ".invalid;transport=ws>");
     _this.rcseq = subscribe.cseq;
     _this.headers = headers ? headers : [];
     _this.target = subscribe.from.uri.user;
@@ -22654,8 +22652,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     params.to_tag = null;
     params.call_id = Utils.createRandomToken(20);
     params.cseq = Math.floor(Math.random() * 10000 + 1);
-    _this.contact = "<sip:".concat(params.from_uri.user, "@").concat(Utils.createRandomToken(12), ".invalid;transport=ws>"); // this.contact = `<sip:${params.from_uri.user}@${params.from_uri.host};transport=ws>`;
-    // Optional, used if credential is different from REGISTER/INVITE
+    _this.contact = "<sip:".concat(params.from_uri.user, "@").concat(Utils.createRandomToken(12), ".invalid;transport=ws>");
+    _this.contact += ";+sip.instance=\"<urn:uuid:".concat(_this._ua.configuration.instance_id, ">\""); // Optional, used if credential is different from REGISTER/INVITE
 
     _this.credential = credential; // dialog state: init, notify_wait, pending, active, terminated
 

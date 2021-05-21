@@ -209,7 +209,7 @@ export class UA extends EventEmitter {
   sendMessage(target: string | URI, body: string, options?: SendMessageOptions): Message;
 
   sendRequest(method: string, target: string, params: RequestParams, headers?: string[], body?: string, handlers?: any, credential?: Credential): void;
-
+  
   subscriber(target: string, options: SubscriberOptions): Subscriber;
 
   notifier(options: NotifierOptions): Notifier;

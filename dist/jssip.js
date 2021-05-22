@@ -16631,6 +16631,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     var subscribe = _ref.subscribe,
         content_type = _ref.content_type,
         headers = _ref.headers,
+        allow_events = _ref.allow_events,
         credential = _ref.credential,
         pending = _ref.pending;
 
@@ -16645,6 +16646,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     _this.is_final_notify_sent = false;
     _this.is_first_notify_response = true;
     _this.id = null;
+    _this.allow_events = allow_events;
     _this.event_name = subscribe.getHeader('event');
 
     if (!content_type) {
@@ -16657,6 +16659,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     _this.contact = "<sip:".concat(subscribe.to.uri.user, "@").concat(Utils.createRandomToken(12), ".invalid;transport=ws>");
     _this.rcseq = subscribe.cseq;
     _this.headers = headers ? headers : [];
+
+    if (_this.allow_events) {
+      _this.headers.push("Allow-Events: ".concat(_this.allow_events));
+    }
+
     _this.target = subscribe.from.uri.user;
     subscribe.to_tag = Utils.newTag();
     _this.params = {
@@ -22670,8 +22677,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
     _this.headers = headers.concat(["Event: ".concat(_this.event_name), "Accept: ".concat(_this.accept), "Expires: ".concat(_this.expires), "Contact: ".concat(_this.contact)]);
 
-    if (_this.allowEvents) {
-      _this.headers.push("Allow-Events: ".concat(_this.allowEvents));
+    if (_this.allow_events) {
+      _this.headers.push("Allow-Events: ".concat(_this.allow_events));
     }
 
     _this.is_terminated = false;

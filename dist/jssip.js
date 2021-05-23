@@ -16619,6 +16619,15 @@ var debug = require('debug')('JsSIP:Notifier');
 var debugerror = require('debug')('JsSIP:ERROR:Notifier');
 
 debugerror.log = console.warn.bind(console);
+var C = {
+  // Termination reason                       
+  TERMINATED_NOTIFY_RESPONSE_TIMEOUT: 0,
+  TERMINATED_NOTIFY_TRANSPORT_ERROR: 1,
+  TERMINATED_NOTIFY_NON_OK_RESPONSE: 2,
+  TERMINATED_SEND_FINAL_NOTIFY: 3,
+  TERMINATED_RECEIVED_UNSUBSCRIBE: 4,
+  TERMINATED_SUBSCRIPTION_EXPIRED: 5
+};
 /**
  * It's implementation of RFC 6665 Notifier
  */
@@ -16712,6 +16721,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
 
   _createClass(Notifier, [{
+    key: "C",
+    get: function get() {
+      return C;
+    }
+  }, {
     key: "onAuthenticated",
     value: function onAuthenticated() {
       this.params.cseq++;
@@ -16719,12 +16733,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "onRequestTimeout",
     value: function onRequestTimeout() {
-      this._dialogTerminated('notify response timeout');
+      this._dialogTerminated(C.TERMINATED_NOTIFY_RESPONSE_TIMEOUT);
     }
   }, {
     key: "onTransportError",
     value: function onTransportError() {
-      this._dialogTerminated('notify transport error');
+      this._dialogTerminated(C.TERMINATED_NOTIFY_TRANSPORT_ERROR);
     }
   }, {
     key: "onReceiveResponse",
@@ -16739,7 +16753,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           }
         }
       } else if (response.status_code >= 300) {
-        this._dialogTerminated('receive notify non-OK response');
+        this._dialogTerminated(C.TERMINATED_NOTIFY_NON_OK_RESPONSE);
       }
     }
     /**
@@ -16771,7 +16785,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       this.emit('subscribe', is_unsubscribe, request, body, content_type);
 
       if (is_unsubscribe) {
-        this._dialogTerminated('receive un-subscribe');
+        this._dialogTerminated(C.TERMINATED_RECEIVED_UNSUBSCRIBE);
       } else {
         this._setExpiresTimestamp();
 
@@ -16865,23 +16879,23 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_dialogTerminated",
     value: function _dialogTerminated(reason) {
-      var _this2 = this;
-
       if (this.is_terminated) {
         return;
       }
 
       this.is_terminated = true;
       this._state = 'terminated';
-      clearTimeout(this.expires_timer); // If delay needed ?
+      clearTimeout(this.expires_timer);
 
-      setTimeout(function () {
-        debug('remove dialog id=', _this2.id);
+      if (this.id) {
+        debug('remove dialog id=', this.id);
 
-        _this2._ua.destroyDialog(_this2);
-      }, 32000);
-      debug("emit \"terminated\" ".concat(reason, "\""));
-      this.emit('terminated', reason);
+        this._ua.destroyDialog(this);
+      }
+
+      var sendFinalNotify = reason === C.TERMINATED_RECEIVED_UNSUBSCRIBE || reason === C.TERMINATED_SUBSCRIPTION_EXPIRED;
+      debug("emit \"terminated\" ".concat(reason, ", sendFinalNotify=").concat(sendFinalNotify));
+      this.emit('terminated', reason, sendFinalNotify);
     }
   }, {
     key: "_setExpiresTimestamp",
@@ -16897,21 +16911,30 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_setExpiresTimer",
     value: function _setExpiresTimer() {
-      var _this3 = this;
+      var _this2 = this;
 
       clearTimeout(this.expires_timer);
       setTimeout(function () {
-        if (_this3.is_final_notify_sent) {
+        if (_this2.is_final_notify_sent) {
           return;
         }
 
-        _this3.terminated_reason = 'timeout';
-        _this3.is_final_notify_sent = true;
+        _this2.terminated_reason = 'timeout';
+        _this2.is_final_notify_sent = true;
 
-        _this3.sendNotify();
+        _this2.sendNotify();
 
-        _this3._dialogTerminated('subscription expired');
+        _this2._dialogTerminated(C.TERMINATED_SUBSCRIPTION_EXPIRED);
       }, this.expires * 1000);
+    }
+  }], [{
+    key: "C",
+    get:
+    /**
+     * Expose C object.
+     */
+    function get() {
+      return C;
     }
   }]);
 
@@ -22930,15 +22953,17 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       this.is_terminated = true;
       this._state = 'terminated';
-      clearTimeout(this.expires_timer); // remove dialog from dialogs table with some delay, to allow receiving final NOTIFY
+      clearTimeout(this.expires_timer); // remove dialog with some delay to receiving possible final NOTIFY
 
-      setTimeout(function () {
-        debug('removed dialog id=', _this2.id);
+      if (this.id) {
+        setTimeout(function () {
+          debug('removed dialog id=', _this2.id);
 
-        _this2._ua.destroyDialog(_this2);
-      }, 32000);
-      debug("emit \"terminated\" ".concat(reason, "\""));
-      this.emit('terminated', reason);
+          _this2._ua.destroyDialog(_this2);
+        }, 32000);
+        debug("emit \"terminated\" ".concat(reason, "\""));
+        this.emit('terminated', reason);
+      }
     }
   }, {
     key: "_send",

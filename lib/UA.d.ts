@@ -160,16 +160,19 @@ export interface SubscriberParams {
 export interface SubscriberOptions {
   event_name: string;
   accept: string;
-  expires: number;
-  content_type: string;
-  params: SubscriberParams;
-  credential: Credential;
+  expires?: number;
+  content_type?: string;
+  params?: SubscriberParams;
+  headers?: string[];
+  credential?: Credential;
 }
 
 export interface NotifierOptions {
   subscribe: IncomingRequest;
   content_type: string;
+  headers?: string[];
   pending?: boolean;
+  credential?: Credential;
 }
 
 declare enum UAStatus {

@@ -16628,6 +16628,16 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
   var _super = _createSuper(Notifier);
 
+  /**
+   * -param {Object} ua JsSIP UA
+   * -param {Object} options 
+   *   -param {IncomingRequest} subscribe
+   *   -param {String} content_type Content-Type header value
+   *   -param {Array}  headers Optional. Additional SIP headers.
+   *   -param {String} allow_events Allow-Events header value. Optional.
+   *   -param {Object} credential. Will have priority over ua.configuration. Optional.
+   *   -param {Boolean} pending Set initial dialog state as "pending". Optional. 
+   */
   function Notifier(ua, _ref) {
     var _this;
 
@@ -16668,7 +16678,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     }
 
     _this.target = subscribe.from.uri.user;
-    subscribe.to_tag = Utils.newTag();
+    subscribe.to_tag = Utils.newTag(); // NOTIFY request params set according received SUBSCRIBE
+
     _this.params = {
       from: subscribe.to,
       from_tag: subscribe.to_tag,
@@ -16676,11 +16687,13 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       to_tag: subscribe.from_tag,
       call_id: subscribe.call_id,
       cseq: Math.floor(Math.random() * 10000 + 1)
-    };
+    }; // Dialog id
+
     _this.id = "".concat(_this.params.call_id).concat(_this.params.from_tag).concat(_this.params.to_tag);
     debug('add dialog id=', _this.id);
 
-    _this._ua.newDialog(_assertThisInitialized(_this));
+    _this._ua.newDialog(_assertThisInitialized(_this)); // Set expires timerstamp and timer
+
 
     _this._setExpiresTimestamp();
 
@@ -16694,7 +16707,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     return _this;
   }
   /**
-   * Callbacks
+   * NOTIFY transactions callbacks
    */
 
 
@@ -16729,6 +16742,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         this._dialogTerminated('receive notify non-OK response');
       }
     }
+    /**
+     * Dialog callback
+     */
+
   }, {
     key: "receiveRequest",
     value: function receiveRequest(request) {
@@ -16765,6 +16782,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
      * User API
      */
 
+    /**
+     * Switch pending dialog state to active
+     */
+
   }, {
     key: "setActiveState",
     value: function setActiveState() {
@@ -16774,6 +16795,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         this._state = 'active';
       }
     }
+    /**
+     *  Send the initial and subsequent NOTIFY request
+     * -param {String} body. Optional.
+     */
+
   }, {
     key: "sendNotify",
     value: function sendNotify() {
@@ -16799,6 +16825,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       this._ua.sendRequest(JsSIP_C.NOTIFY, this.target, this.params, headers, body, this, this.credential);
     }
+    /**
+     *  Send the final NOTIFY request
+     * -param {String} body Optional.
+     * -param {String} reason To construct Subscription-State. Optional.
+     */
+
   }, {
     key: "sendFinalNotify",
     value: function sendFinalNotify() {
@@ -16817,6 +16849,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       this.terminated_reason = reason;
       this.sendNotify(body);
     }
+    /**
+     * Get dialog state 
+     */
+
   }, {
     key: "state",
     get: function get() {
@@ -22603,6 +22639,20 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
   var _super = _createSuper(Subscriber);
 
+  /**
+   * -param {Object} ua JsSIP UA
+   * -param {String} target
+   * -param {Object} options 
+   *   -param {String} event_name Event header value
+   *   -param {String} accept Accept header value
+   *   -param {Number} expires Expires header value. Optional. Default is 900
+   *   -param {String} content_type Content-Type header value
+   *   -param {String} allow_events Allow-Events header value. Optional.
+   *   -param {Object} params Will have priority over ua.configuration. Optional.
+   *      If set please define: to_uri, to_display_name, from_uri, from_display_name
+   *   -param {Array}  headers Optional. Additional SIP headers.
+   *   -param {Object} credential. Will have priority over ua.configuration. Optional.
+   */
   function Subscriber(ua, target, _ref) {
     var _this;
 
@@ -22648,31 +22698,26 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
     _this.content_type = content_type;
     _this.is_first_notify_request = true;
-    /**
-     * params is optional. 
-     * It is used if the user or domain differ from those set in JsSIP.UA config.
-     * If used please define properties: 
-     * to_uri, to_display_name, from_uri, from_display_name
-     */
-
     _this.params = params ? Utils.cloneObject(params) : {};
 
     if (!_this.params.from_uri) {
       _this.params.from_uri = _this._ua.configuration.uri;
-    }
+    } // set SUBSCRIBE dialog parameters
+
 
     _this.params.from_tag = Utils.newTag();
     _this.params.to_tag = null;
     _this.params.call_id = Utils.createRandomToken(20);
-    _this.params.cseq = Math.floor(Math.random() * 10000 + 1);
+    _this.params.cseq = Math.floor(Math.random() * 10000 + 1); // Create contact
+
     _this.contact = "<sip:".concat(_this.params.from_uri.user, "@").concat(Utils.createRandomToken(12), ".invalid;transport=ws>");
     _this.contact += ";+sip.instance=\"<urn:uuid:".concat(_this._ua.configuration.instance_id, ">\""); // Optional, used if credential is different from REGISTER/INVITE
 
-    _this.credential = credential; // dialog state: init, notify_wait, pending, active, terminated
+    _this.credential = credential; // Dialog state: init, notify_wait, pending, active, terminated
 
-    _this._state = 'init'; // dialog id 
+    _this._state = 'init'; // Dialog id 
 
-    _this.id = null; // to refresh subscription
+    _this.id = null; // To refresh subscription
 
     _this.expires_timer = null;
     _this.expires_timestamp = null;
@@ -22694,7 +22739,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     return _this;
   }
   /**
-   * Callbacks
+   * SUBSCRIBE transactions callbacks
    */
 
 
@@ -22747,6 +22792,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         this._dialogTerminated('receive subscribe non-OK response');
       }
     }
+    /**
+     * Dialog callback
+     */
+
   }, {
     key: "receiveRequest",
     value: function receiveRequest(request) {
@@ -22812,6 +22861,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
      * User API
      */
 
+    /** 
+     * Send the initial and subsequent SUBSCRIBE request
+     * -param {String} body. Optional.
+     */
+
   }, {
     key: "subscribe",
     value: function subscribe() {
@@ -22834,6 +22888,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       this._send(body, headers);
     }
+    /** 
+     * Send un-SUBSCRIBE
+     * -param {String} body. Optional.
+     */
+
   }, {
     key: "unsubscribe",
     value: function unsubscribe() {
@@ -22846,6 +22905,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       this._send(body, headers);
     }
+    /**
+     * Get dialog state
+     */
+
   }, {
     key: "state",
     get: function get() {

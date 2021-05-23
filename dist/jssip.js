@@ -16619,6 +16619,9 @@ var debug = require('debug')('JsSIP:Notifier');
 var debugerror = require('debug')('JsSIP:ERROR:Notifier');
 
 debugerror.log = console.warn.bind(console);
+/**
+ * It's implementation of RFC 6665 Notifier
+ */
 
 module.exports = /*#__PURE__*/function (_EventEmitter) {
   _inherits(Notifier, _EventEmitter);
@@ -22591,6 +22594,9 @@ var debug = require('debug')('JsSIP:Subscriber');
 var debugerror = require('debug')('JsSIP:ERROR:Subscriber');
 
 debugerror.log = console.warn.bind(console);
+/**
+ * It's implementation of RFC 6665 Subscriber
+ */
 
 module.exports = /*#__PURE__*/function (_EventEmitter) {
   _inherits(Subscriber, _EventEmitter);
@@ -22641,25 +22647,25 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     _this.allow_events = allow_events; // used to subscribe with body
 
     _this.content_type = content_type;
+    _this.is_first_notify_request = true;
+    /**
+     * params is optional. 
+     * It is used if the user or domain differ from those set in JsSIP.UA config.
+     * If used please define properties: 
+     * to_uri, to_display_name, from_uri, from_display_name
+     */
 
-    if (!params) {
-      throw new TypeError('params is undefined');
+    _this.params = params ? Utils.cloneObject(params) : {};
+
+    if (!_this.params.from_uri) {
+      _this.params.from_uri = _this._ua.configuration.uri;
     }
 
-    if (!params.from_uri) {
-      throw new TypeError('params.from_uri is undefined');
-    }
-
-    if (!params.to_uri) {
-      throw new TypeError('params.to_uri is undefined');
-    }
-
-    _this.params = params;
-    params.from_tag = Utils.newTag();
-    params.to_tag = null;
-    params.call_id = Utils.createRandomToken(20);
-    params.cseq = Math.floor(Math.random() * 10000 + 1);
-    _this.contact = "<sip:".concat(params.from_uri.user, "@").concat(Utils.createRandomToken(12), ".invalid;transport=ws>");
+    _this.params.from_tag = Utils.newTag();
+    _this.params.to_tag = null;
+    _this.params.call_id = Utils.createRandomToken(20);
+    _this.params.cseq = Math.floor(Math.random() * 10000 + 1);
+    _this.contact = "<sip:".concat(_this.params.from_uri.user, "@").concat(Utils.createRandomToken(12), ".invalid;transport=ws>");
     _this.contact += ";+sip.instance=\"<urn:uuid:".concat(_this._ua.configuration.instance_id, ">\""); // Optional, used if credential is different from REGISTER/INVITE
 
     _this.credential = credential; // dialog state: init, notify_wait, pending, active, terminated
@@ -22758,6 +22764,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       }
 
       request.reply(200);
+
+      if (this.is_first_notify_request) {
+        this.is_first_notify_request = false; // TODO: see RFC 6665 4.4.1. If route_set should be updated here ?
+      }
+
       var new_state = subs_state.state.toLowerCase();
       var prev_state = this._state;
 

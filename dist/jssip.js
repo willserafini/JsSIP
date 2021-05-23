@@ -22640,7 +22640,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   var _super = _createSuper(Subscriber);
 
   /**
-   * -param {Object} ua JsSIP UA
+   * -param {Object} ua reference to JsSIP.UA
    * -param {String} target
    * -param {Object} options 
    *   -param {String} event_name Event header value

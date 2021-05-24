@@ -16619,14 +16619,17 @@ var debug = require('debug')('JsSIP:Notifier');
 var debugerror = require('debug')('JsSIP:ERROR:Notifier');
 
 debugerror.log = console.warn.bind(console);
+/**
+ * Termination code 
+ */
+
 var C = {
-  // Termination reason                       
-  TERMINATED_NOTIFY_RESPONSE_TIMEOUT: 0,
-  TERMINATED_NOTIFY_TRANSPORT_ERROR: 1,
-  TERMINATED_NOTIFY_NON_OK_RESPONSE: 2,
-  TERMINATED_SEND_FINAL_NOTIFY: 3,
-  TERMINATED_RECEIVED_UNSUBSCRIBE: 4,
-  TERMINATED_SUBSCRIPTION_EXPIRED: 5
+  NOTIFY_RESPONSE_TIMEOUT: 0,
+  NOTIFY_TRANSPORT_ERROR: 1,
+  NOTIFY_NON_OK_RESPONSE: 2,
+  SEND_FINAL_NOTIFY: 3,
+  RECEIVED_UNSUBSCRIBE: 4,
+  SUBSCRIPTION_EXPIRED: 5
 };
 /**
  * It's implementation of RFC 6665 Notifier
@@ -16733,12 +16736,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "onRequestTimeout",
     value: function onRequestTimeout() {
-      this._dialogTerminated(C.TERMINATED_NOTIFY_RESPONSE_TIMEOUT);
+      this._dialogTerminated(C.NOTIFY_RESPONSE_TIMEOUT);
     }
   }, {
     key: "onTransportError",
     value: function onTransportError() {
-      this._dialogTerminated(C.TERMINATED_NOTIFY_TRANSPORT_ERROR);
+      this._dialogTerminated(C.NOTIFY_TRANSPORT_ERROR);
     }
   }, {
     key: "onReceiveResponse",
@@ -16753,7 +16756,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           }
         }
       } else if (response.status_code >= 300) {
-        this._dialogTerminated(C.TERMINATED_NOTIFY_NON_OK_RESPONSE);
+        this._dialogTerminated(C.NOTIFY_NON_OK_RESPONSE);
       }
     }
     /**
@@ -16785,7 +16788,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       this.emit('subscribe', is_unsubscribe, request, body, content_type);
 
       if (is_unsubscribe) {
-        this._dialogTerminated(C.TERMINATED_RECEIVED_UNSUBSCRIBE);
+        this._dialogTerminated(C.RECEIVED_UNSUBSCRIBE);
       } else {
         this._setExpiresTimestamp();
 
@@ -16878,7 +16881,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
   }, {
     key: "_dialogTerminated",
-    value: function _dialogTerminated(reason) {
+    value: function _dialogTerminated(termination_code) {
       if (this.is_terminated) {
         return;
       }
@@ -16893,9 +16896,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         this._ua.destroyDialog(this);
       }
 
-      var sendFinalNotify = reason === C.TERMINATED_RECEIVED_UNSUBSCRIBE || reason === C.TERMINATED_SUBSCRIPTION_EXPIRED;
-      debug("emit \"terminated\" ".concat(reason, ", sendFinalNotify=").concat(sendFinalNotify));
-      this.emit('terminated', reason, sendFinalNotify);
+      var send_final_notify = termination_code === C.RECEIVED_UNSUBSCRIBE || termination_code === C.SUBSCRIPTION_EXPIRED;
+      debug("emit \"terminated\" termination code=".concat(termination_code, ", send final notify=").concat(send_final_notify));
+      this.emit('terminated', termination_code, send_final_notify);
     }
   }, {
     key: "_setExpiresTimestamp",
@@ -16924,7 +16927,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
         _this2.sendNotify();
 
-        _this2._dialogTerminated(C.TERMINATED_SUBSCRIPTION_EXPIRED);
+        _this2._dialogTerminated(C.SUBSCRIPTION_EXPIRED);
       }, this.expires * 1000);
     }
   }], [{
@@ -22654,6 +22657,17 @@ var debugerror = require('debug')('JsSIP:ERROR:Subscriber');
 
 debugerror.log = console.warn.bind(console);
 /**
+ * Termination code 
+ */
+
+var C = {
+  SUBSCRIBE_RESPONSE_TIMEOUT: 0,
+  SUBSCRIBE_TRANSPORT_ERROR: 1,
+  SUBSCRIBE_NON_OK_RESPONSE: 2,
+  SEND_UNSUBSCRIBE: 3,
+  RECEIVE_FINAL_NOTIFY: 4
+};
+/**
  * It's implementation of RFC 6665 Subscriber
  */
 
@@ -22767,6 +22781,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
 
   _createClass(Subscriber, [{
+    key: "C",
+    get: function get() {
+      return C;
+    }
+  }, {
     key: "onAuthenticated",
     value: function onAuthenticated() {
       this.params.cseq++;
@@ -22774,12 +22793,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "onRequestTimeout",
     value: function onRequestTimeout() {
-      this._dialogTerminated('subscribe response timeout');
+      this._dialogTerminated(C.SUBSCRIBE_RESPONSE_TIMEOUT);
     }
   }, {
     key: "onTransportError",
     value: function onTransportError() {
-      this._dialogTerminated('subscribe transport error');
+      this._dialogTerminated(C.SUBSCRIBE_TRANSPORT_ERROR);
     }
   }, {
     key: "onReceiveResponse",
@@ -22812,7 +22831,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           this._scheduleSubscribe(this._calculateTimeoutMs(expires));
         }
       } else if (response.status_code >= 300) {
-        this._dialogTerminated('receive subscribe non-OK response');
+        this._dialogTerminated(C.SUBSCRIBE_NON_OK_RESPONSE);
       }
     }
     /**
@@ -22877,7 +22896,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       }
 
       if (is_final) {
-        this._dialogTerminated('receive final notify');
+        this._dialogTerminated(C.RECEIVE_FINAL_NOTIFY);
       }
     }
     /**
@@ -22922,7 +22941,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var body = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
       debug('unsubscribe()');
 
-      this._dialogTerminated('send un-subscribe');
+      this._dialogTerminated(C.SEND_UNSUBSCRIBE);
 
       var headers = ["Event: ".concat(this.event_name), 'Expires: 0'];
 
@@ -22943,7 +22962,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
   }, {
     key: "_dialogTerminated",
-    value: function _dialogTerminated(reason) {
+    value: function _dialogTerminated(termination_code) {
       var _this2 = this;
 
       // to prevent duplicate emit terminated
@@ -22961,8 +22980,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
           _this2._ua.destroyDialog(_this2);
         }, 32000);
-        debug("emit \"terminated\" ".concat(reason, "\""));
-        this.emit('terminated', reason);
+        debug("emit \"terminated\" termination code=".concat(termination_code, "\""));
+        this.emit('terminated', termination_code);
       }
     }
   }, {
@@ -22994,6 +23013,15 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
         _this3._send(null, _this3.headers);
       }, timeout);
+    }
+  }], [{
+    key: "C",
+    get:
+    /**
+     * Expose C object.
+     */
+    function get() {
+      return C;
     }
   }]);
 

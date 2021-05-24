@@ -16681,9 +16681,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     _this.content_type = content_type;
     _this.expires = parseInt(subscribe.getHeader('expires'));
     _this.credential = credential;
-    _this.contact = "<sip:".concat(subscribe.to.uri.user, "@").concat(Utils.createRandomToken(12), ".invalid;transport=ws>");
     _this.rcseq = subscribe.cseq;
+    _this.contact = "<sip:".concat(subscribe.to.uri.user, "@").concat(Utils.createRandomToken(12), ".invalid;transport=ws>");
     _this.headers = headers ? headers : [];
+
+    _this.headers.push("Contact: ".concat(_this.contact));
 
     if (_this.allow_events) {
       _this.headers.push("Allow-Events: ".concat(_this.allow_events));

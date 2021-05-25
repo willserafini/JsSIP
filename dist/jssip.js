@@ -16867,7 +16867,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       this.is_final_notify_sent = true;
 
-      this._dialogTerminated('send final notify');
+      this._dialogTerminated(C.SEND_FINAL_NOTIFY);
 
       this.terminated_reason = reason;
       this.sendNotify(body);

@@ -16715,10 +16715,13 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
 
       _this._setExpiresTimer();
-    }
+    } // To prevent duplicate emit 'terminated'
 
-    _this._is_terminated = false;
-    _this._terminated_reason = undefined; // Custom session empty object for high level use.
+
+    _this._is_terminated = false; // Optional. Used to build terminated Subscription-State
+
+    _this._terminated_reason = null;
+    _this._terminated_retry_after = null; // Custom session empty object for high level use.
 
     _this.data = {};
     return _this;
@@ -16856,8 +16859,14 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         }
 
         subs_state += ";expires=".concat(expires);
-      } else if (this._terminated_reason) {
-        subs_state += ";reason=".concat(this._terminated_reason);
+      } else {
+        if (this._terminated_reason) {
+          subs_state += ";reason=".concat(this._terminated_reason);
+        }
+
+        if (this._terminated_retry_after !== null) {
+          subs_state += ";retry-after=".concat(this._terminated_retry_after);
+        }
       }
 
       var headers = this._headers.slice();
@@ -16875,7 +16884,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     /**
      *  Send the final NOTIFY request
      * -param {String} body Optional.
-     * -param {String} reason Optional. To construct Subscription-State.
+     * -param {String} reason Optional. To build Subscription-State header
+     * -param {Number} retryAfter Optional. To build Subscription-State header
      */
 
   }, {
@@ -16883,9 +16893,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function sendFinalNotify() {
       var body = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
       var reason = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var retryAfter = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
       debug('sendFinalNotify()');
       this._state = 'terminated';
       this._terminated_reason = reason;
+      this._terminated_retry_after = retryAfter;
       this.sendNotify(body);
       this._is_final_notify_sent = true;
 
@@ -22960,19 +22972,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       }
 
       var body = request.body; // Check if the NOTIFY is final
-      // For final NOTIFY get optional Subscription-State reason
 
-      var is_final;
-      var reason;
-
-      if (new_state === 'terminated') {
-        is_final = true;
-        reason = undefined;
-      } else {
-        is_final = false;
-        reason = subs_state.reason;
-      } // notify event fired for NOTIFY with body
-
+      var is_final = new_state === 'terminated'; // notify event fired for NOTIFY with body
 
       if (body) {
         var content_type = request.getHeader('content-type');
@@ -22981,7 +22982,14 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       }
 
       if (is_final) {
-        this._dialogTerminated(C.RECEIVE_FINAL_NOTIFY, reason);
+        var reason = subs_state.reason;
+        var retry_after = undefined;
+
+        if (subs_state.params && subs_state.params['retry-after'] !== undefined) {
+          retry_after = parseInt(subs_state.params['retry-after']);
+        }
+
+        this._dialogTerminated(C.RECEIVE_FINAL_NOTIFY, reason, retry_after);
       }
     }
     /**
@@ -23073,6 +23081,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     key: "_dialogTerminated",
     value: function _dialogTerminated(terminationCode) {
       var reason = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+      var retryAfter = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
 
       // to prevent duplicate emit terminated
       if (this._is_terminated) {
@@ -23091,8 +23100,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         this._ua.destroyDialog(this);
       }
 
-      debug("emit \"terminated\" code=".concat(terminationCode, " ").concat(reason));
-      this.emit('terminated', terminationCode, reason);
+      debug("emit \"terminated\" code=".concat(terminationCode));
+      this.emit('terminated', terminationCode, reason, retryAfter);
     }
   }, {
     key: "_send",

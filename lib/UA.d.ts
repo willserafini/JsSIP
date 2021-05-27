@@ -158,10 +158,11 @@ export interface SubscriberParams {
 }
 
 export interface SubscriberOptions {
-  event_name: string;
+  eventName: string;
   accept: string;
   expires?: number;
-  content_type?: string;
+  contentType?: string;
+  allowEvents?: string;
   params?: SubscriberParams;
   headers?: string[];
   credential?: Credential;
@@ -169,7 +170,8 @@ export interface SubscriberOptions {
 
 export interface NotifierOptions {
   subscribe: IncomingRequest;
-  content_type: string;
+  contentType: string;
+  allowEvents?: string;
   headers?: string[];
   pending?: boolean;
   credential?: Credential;

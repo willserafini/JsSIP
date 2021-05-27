@@ -13,6 +13,7 @@ declare enum NotifierTerminatedCode {
 }
 
 export class Notifier extends EventEmitter {
+  start(): void;
   setActiveState(): void;
   sendNotify(body?: string): void; 
   sendFinalNotify(body?: string, reason?: string): void; 

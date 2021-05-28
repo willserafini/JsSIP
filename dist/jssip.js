@@ -16810,8 +16810,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
      */
 
     /**
-     * The called after constructor and event handlers settings.
-     * To use events 'subscribe' and 'terminated' for initial subscribe
+     * Should be called after creating the Notifier instance and setting the event handlers
      */
 
   }, {

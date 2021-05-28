@@ -16668,10 +16668,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     _this._ua = ua;
     _this._initial_subscribe = subscribe;
     _this._expires_timestamp = null;
-    _this._expires_timer = null;
+    _this._expires_timer = null; // Notifier state: pending, active, terminated. Not used: init, resp_wait
+
     _this._state = pending ? 'pending' : 'active';
     _this._is_final_notify_sent = false;
-    _this._is_first_notify_response = true;
+    _this._is_first_notify_response = true; // dialog id
+
     _this._id = null;
     _this._allow_events = allowEvents;
     _this._event_name = subscribe.getHeader('event');
@@ -22796,7 +22798,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     _this._contact = "<sip:".concat(_this._params.from_uri.user, "@").concat(Utils.createRandomToken(12), ".invalid;transport=ws>");
     _this._contact += ";+sip.instance=\"<urn:uuid:".concat(_this._ua.configuration.instance_id, ">\""); // Optional, used if credential is different from REGISTER/INVITE
 
-    _this._credential = credential; // Dialog state: init, notify_wait, pending, active, terminated
+    _this._credential = credential; // Subscriber state: init, notify_wait, pending, active, terminated
 
     _this._state = 'init'; // Dialog id 
 

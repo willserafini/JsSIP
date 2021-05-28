@@ -16798,13 +16798,16 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var body = request.body;
       var content_type = request.getHeader('content-type');
       var is_unsubscribe = this._expires === 0;
+
+      if (!is_unsubscribe) {
+        this._setExpiresTimer();
+      }
+
       debug('emit "subscribe"');
       this.emit('subscribe', is_unsubscribe, request, body, content_type);
 
       if (is_unsubscribe) {
         this._dialogTerminated(C.RECEIVE_UNSUBSCRIBE);
-      } else {
-        this._setExpiresTimer();
       }
     }
     /**

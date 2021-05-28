@@ -16952,7 +16952,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       this._expires_timestamp = new Date().getTime() + this._expires * 1000;
       clearTimeout(this._expires_timer);
-      setTimeout(function () {
+      this._expires_timer = setTimeout(function () {
         if (_this2._is_final_notify_sent) {
           return;
         }

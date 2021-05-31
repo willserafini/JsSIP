@@ -22732,6 +22732,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
    *   -param {Object} params Will have priority over ua.configuration. Optional.
    *      If set please define: to_uri, to_display_name, from_uri, from_display_name
    *   -param {Array}  headers Optional. Additional SIP headers.
+   *   -param {String} contact Optional. Custom SUBSCRIBE contact.
    *   -param {Object} credential. Will have priority over ua.configuration. Optional.
    */
   function Subscriber(ua, target, _ref) {
@@ -22744,6 +22745,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         allowEvents = _ref.allowEvents,
         params = _ref.params,
         headers = _ref.headers,
+        contact = _ref.contact,
         credential = _ref.credential;
 
     _classCallCheck(this, Subscriber);
@@ -22795,11 +22797,20 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
     _this._params.from_tag = Utils.newTag();
     _this._params.to_tag = null;
-    _this._params.call_id = Utils.createRandomToken(20);
-    _this._params.cseq = Math.floor(Math.random() * 10000 + 1); // Create contact
+    _this._params.call_id = Utils.createRandomToken(20); // Create cseq if not defined custom cseq
 
-    _this._contact = "<sip:".concat(_this._params.from_uri.user, "@").concat(Utils.createRandomToken(12), ".invalid;transport=ws>");
-    _this._contact += ";+sip.instance=\"<urn:uuid:".concat(_this._ua.configuration.instance_id, ">\""); // Optional, used if credential is different from REGISTER/INVITE
+    if (_this._params.cseq === undefined) {
+      _this._params.cseq = Math.floor(Math.random() * 10000 + 1);
+    } // Create contact if not defined custom contact
+
+
+    if (!contact) {
+      _this._contact = "<sip:".concat(_this._params.from_uri.user, "@").concat(Utils.createRandomToken(12), ".invalid;transport=ws>");
+      _this._contact += ";+sip.instance=\"<urn:uuid:".concat(_this._ua.configuration.instance_id, ">\"");
+    } else {
+      _this._contact = contact;
+    } // Optional, used if credential is different from REGISTER/INVITE
+
 
     _this._credential = credential; // Subscriber state: init, notify_wait, pending, active, terminated
 

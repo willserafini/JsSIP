@@ -165,6 +165,7 @@ export interface SubscriberOptions {
   allowEvents?: string;
   params?: SubscriberParams;
   headers?: string[];
+  contact?: string;
   credential?: Credential;
 }
 

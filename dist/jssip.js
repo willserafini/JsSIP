@@ -22732,7 +22732,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
    *   -param {Object} params Will have priority over ua.configuration. Optional.
    *      If set please define: to_uri, to_display_name, from_uri, from_display_name
    *   -param {Array}  headers Optional. Additional SIP headers.
-   *   -param {String} contact Optional. Custom SUBSCRIBE contact.
    *   -param {Object} credential. Will have priority over ua.configuration. Optional.
    */
   function Subscriber(ua, target, _ref) {
@@ -22745,7 +22744,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         allowEvents = _ref.allowEvents,
         params = _ref.params,
         headers = _ref.headers,
-        contact = _ref.contact,
         credential = _ref.credential;
 
     _classCallCheck(this, Subscriber);
@@ -22801,14 +22799,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
     if (_this._params.cseq === undefined) {
       _this._params.cseq = Math.floor(Math.random() * 10000 + 1);
-    } // Create contact if not defined custom contact
-
-
-    if (!contact) {
-      _this._contact = "<sip:".concat(_this._params.from_uri.user, "@").concat(Utils.createRandomToken(12), ".invalid;transport=ws>");
-      _this._contact += ";+sip.instance=\"<urn:uuid:".concat(_this._ua.configuration.instance_id, ">\"");
-    } else {
-      _this._contact = contact;
     } // Optional, used if credential is different from REGISTER/INVITE
 
 
@@ -22824,14 +22814,23 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     _this._send_unsubscribe = false; // After send un-subscribe wait final NOTIFY limited time.
 
     _this._unsubscribe_timeout_timer = null;
-    _this._headers = Utils.cloneArray(headers);
     var event_value = _this._event_name;
 
     if (_this._event_id) {
       event_value += ";id=".concat(_this._event_id);
     }
 
-    _this._headers = _this._headers.concat(["Event: ".concat(event_value), "Expires: ".concat(_this._expires), "Accept: ".concat(_this._accept), "Contact: ".concat(_this._contact)]);
+    _this._headers = Utils.cloneArray(headers);
+    _this._headers = _this._headers.concat(["Event: ".concat(event_value), "Expires: ".concat(_this._expires), "Accept: ".concat(_this._accept)]);
+
+    if (!_this._headers.find(function (h) {
+      return h.startsWith('Contact');
+    })) {
+      var contact = "Contact: <sip:".concat(_this._params.from_uri.user, "@").concat(Utils.createRandomToken(12), ".invalid;transport=ws>");
+      contact += ";+sip.instance=\"<urn:uuid:".concat(_this._ua.configuration.instance_id, ">\"");
+
+      _this._headers.push(contact);
+    }
 
     if (_this._allow_events) {
       _this._headers.push("Allow-Events: ".concat(_this._allow_events));

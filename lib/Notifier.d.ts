@@ -15,8 +15,8 @@ declare enum NotifierTerminatedCode {
 export class Notifier extends EventEmitter {
   start(): void;
   setActiveState(): void;
-  sendNotify(body?: string): void; 
-  sendFinalNotify(body?: string, reason?: string): void; 
+  notify(body?: string): void; 
+  terminate(body?: string, reason?: string): void; 
   get state(): string;
   get id(): string;
   static get C(): typeof NotifierTerminatedCode;

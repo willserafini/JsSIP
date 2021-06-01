@@ -134,11 +134,6 @@ export interface UAContact {
   toString(options?: UAContactOptions): string
 }
 
-export interface Credential {
-  authorization_user: string;
-  password: string;
-}
-
 export interface RequestParams {
   from_uri: URI;
   from_display_name?: string;
@@ -158,23 +153,17 @@ export interface SubscriberParams {
 }
 
 export interface SubscriberOptions {
-  eventName: string;
-  accept: string;
   expires?: number;
   contentType?: string;
   allowEvents?: string;
   params?: SubscriberParams;
-  headers?: string[];
-  credential?: Credential;
+  extraHeaders?: string[];
 }
 
 export interface NotifierOptions {
-  subscribe: IncomingRequest;
-  contentType: string;
   allowEvents?: string;
-  headers?: string[];
+  extraHeaders?: string[];
   pending?: boolean;
-  credential?: Credential;
 }
 
 declare enum UAStatus {
@@ -213,11 +202,9 @@ export class UA extends EventEmitter {
 
   sendMessage(target: string | URI, body: string, options?: SendMessageOptions): Message;
 
-  sendRequest(method: string, target: string, params: RequestParams, headers?: string[], body?: string, handlers?: any, credential?: Credential): void;
-  
-  subscriber(target: string, options: SubscriberOptions): Subscriber;
+  subscribe(target: string, eventName: string, accept: string, options?: SubscriberOptions): Subscriber;
 
-  notifier(options: NotifierOptions): Notifier;
+  notifier( subscribe: IncomingRequest, contentType: string, options?: NotifierOptions): Notifier;
 
   terminateSessions(options?: TerminateOptions): void;
 

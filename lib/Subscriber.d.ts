@@ -14,7 +14,7 @@ declare enum SubscriberTerminatedCode {
 
 export class Subscriber extends EventEmitter {
   subscribe(body?: string): void;
-  unsubscribe(body?: string): void;
+  terminate(body?: string): void;
   get state(): string;
   get id(): string;
   static get C(): typeof SubscriberTerminatedCode;

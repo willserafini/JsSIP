@@ -22918,7 +22918,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
           if (route_set.length > 0) {
             this._params.route_set = route_set;
-          }
+          } // Тo wait for a response to the initial subscribe, and then send the next subscribe.
+
+
+          this.emit('newSubscriber');
         } // Check expires value.
 
 

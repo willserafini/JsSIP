@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.7.6
+ * JsSIP v3.7.11
  * the Javascript SIP library
  * Copyright: 2012-2021 
  * Homepage: https://jssip.net
@@ -9,7 +9,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.JsSIP = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -294,7 +294,7 @@ exports.load = function (dst, src) {
     }
   }
 };
-},{"./Constants":2,"./Exceptions":6,"./Grammar":7,"./Socket":21,"./URI":27,"./Utils":28}],2:[function(require,module,exports){
+},{"./Constants":2,"./Exceptions":6,"./Grammar":7,"./Socket":21,"./URI":26,"./Utils":27}],2:[function(require,module,exports){
 "use strict";
 
 var pkg = require('../package.json');
@@ -462,7 +462,7 @@ module.exports = {
     604: 'Does Not Exist Anywhere',
     606: 'Not Acceptable'
   },
-  ALLOWED_METHODS: 'INVITE,ACK,CANCEL,BYE,UPDATE,MESSAGE,OPTIONS,REFER,INFO,NOTIFY,SUBSCRIBE',
+  ALLOWED_METHODS: 'INVITE,ACK,CANCEL,BYE,UPDATE,MESSAGE,OPTIONS,REFER,INFO,NOTIFY',
   ACCEPTED_BODY_TYPES: 'application/sdp, application/dtmf-relay',
   MAX_FORWARDS: 69,
   SESSION_EXPIRES: 90,
@@ -470,7 +470,7 @@ module.exports = {
   CONNECTION_RECOVERY_MAX_INTERVAL: 30,
   CONNECTION_RECOVERY_MIN_INTERVAL: 2
 };
-},{"../package.json":40}],3:[function(require,module,exports){
+},{"../package.json":39}],3:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -478,6 +478,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var Logger = require('./Logger');
 
 var SIPMessage = require('./SIPMessage');
 
@@ -489,8 +491,7 @@ var Dialog_RequestSender = require('./Dialog/RequestSender');
 
 var Utils = require('./Utils');
 
-var debug = require('debug')('JsSIP:Dialog');
-
+var logger = new Logger('Dialog');
 var C = {
   // Dialog states.
   STATUS_EARLY: 1,
@@ -498,6 +499,14 @@ var C = {
 }; // RFC 3261 12.1.
 
 module.exports = /*#__PURE__*/function () {
+  _createClass(Dialog, null, [{
+    key: "C",
+    // Expose C object.
+    get: function get() {
+      return C;
+    }
+  }]);
+
   function Dialog(owner, message, type) {
     var state = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : C.STATUS_CONFIRMED;
 
@@ -557,45 +566,14 @@ module.exports = /*#__PURE__*/function () {
 
     this._ua.newDialog(this);
 
-    debug("new ".concat(type, " dialog created with status ").concat(this._state === C.STATUS_EARLY ? 'EARLY' : 'CONFIRMED'));
+    logger.debug("new ".concat(type, " dialog created with status ").concat(this._state === C.STATUS_EARLY ? 'EARLY' : 'CONFIRMED'));
   }
 
   _createClass(Dialog, [{
-    key: "id",
-    get: function get() {
-      return this._id;
-    }
-  }, {
-    key: "local_seqnum",
-    get: function get() {
-      return this._local_seqnum;
-    },
-    set: function set(num) {
-      this._local_seqnum = num;
-    }
-  }, {
-    key: "owner",
-    get: function get() {
-      return this._owner;
-    }
-  }, {
-    key: "uac_pending_reply",
-    get: function get() {
-      return this._uac_pending_reply;
-    },
-    set: function set(pending) {
-      this._uac_pending_reply = pending;
-    }
-  }, {
-    key: "uas_pending_reply",
-    get: function get() {
-      return this._uas_pending_reply;
-    }
-  }, {
     key: "update",
     value: function update(message, type) {
       this._state = C.STATUS_CONFIRMED;
-      debug("dialog ".concat(this._id.toString(), "  changed to CONFIRMED state"));
+      logger.debug("dialog ".concat(this._id.toString(), "  changed to CONFIRMED state"));
 
       if (type === 'UAC') {
         // RFC 3261 13.2.2.4.
@@ -605,7 +583,7 @@ module.exports = /*#__PURE__*/function () {
   }, {
     key: "terminate",
     value: function terminate() {
-      debug("dialog ".concat(this._id.toString(), " deleted"));
+      logger.debug("dialog ".concat(this._id.toString(), " deleted"));
 
       this._ua.destroyDialog(this);
     }
@@ -736,17 +714,42 @@ module.exports = /*#__PURE__*/function () {
 
       return true;
     }
-  }], [{
-    key: "C",
-    get: // Expose C object.
-    function get() {
-      return C;
+  }, {
+    key: "id",
+    get: function get() {
+      return this._id;
+    }
+  }, {
+    key: "local_seqnum",
+    get: function get() {
+      return this._local_seqnum;
+    },
+    set: function set(num) {
+      this._local_seqnum = num;
+    }
+  }, {
+    key: "owner",
+    get: function get() {
+      return this._owner;
+    }
+  }, {
+    key: "uac_pending_reply",
+    get: function get() {
+      return this._uac_pending_reply;
+    },
+    set: function set(pending) {
+      this._uac_pending_reply = pending;
+    }
+  }, {
+    key: "uas_pending_reply",
+    get: function get() {
+      return this._uas_pending_reply;
     }
   }]);
 
   return Dialog;
 }();
-},{"./Constants":2,"./Dialog/RequestSender":4,"./SIPMessage":20,"./Transactions":24,"./Utils":28,"debug":32}],4:[function(require,module,exports){
+},{"./Constants":2,"./Dialog/RequestSender":4,"./Logger":9,"./SIPMessage":20,"./Transactions":23,"./Utils":27}],4:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -795,11 +798,6 @@ module.exports = /*#__PURE__*/function () {
   }
 
   _createClass(DialogRequestSender, [{
-    key: "request",
-    get: function get() {
-      return this._request;
-    }
-  }, {
     key: "send",
     value: function send() {
       var _this = this;
@@ -865,11 +863,16 @@ module.exports = /*#__PURE__*/function () {
         this._eventHandlers.onErrorResponse(response);
       }
     }
+  }, {
+    key: "request",
+    get: function get() {
+      return this._request;
+    }
   }]);
 
   return DialogRequestSender;
 }();
-},{"../Constants":2,"../RTCSession":13,"../RequestSender":19,"../Transactions":24}],5:[function(require,module,exports){
+},{"../Constants":2,"../RTCSession":13,"../RequestSender":19,"../Transactions":23}],5:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -878,13 +881,11 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+var Logger = require('./Logger');
+
 var Utils = require('./Utils');
 
-var debug = require('debug')('JsSIP:DigestAuthentication');
-
-var debugerror = require('debug')('JsSIP:ERROR:DigestAuthentication');
-
-debugerror.log = console.warn.bind(console);
+var logger = new Logger('DigestAuthentication');
 
 module.exports = /*#__PURE__*/function () {
   function DigestAuthentication(credentials) {
@@ -917,7 +918,7 @@ module.exports = /*#__PURE__*/function () {
           return this._ha1;
 
         default:
-          debugerror('get() | cannot get "%s" parameter', parameter);
+          logger.warn('get() | cannot get "%s" parameter', parameter);
           return undefined;
       }
     }
@@ -944,7 +945,7 @@ module.exports = /*#__PURE__*/function () {
 
       if (this._algorithm) {
         if (this._algorithm !== 'MD5') {
-          debugerror('authenticate() | challenge with Digest algorithm different than "MD5", authentication aborted');
+          logger.warn('authenticate() | challenge with Digest algorithm different than "MD5", authentication aborted');
           return false;
         }
       } else {
@@ -952,12 +953,12 @@ module.exports = /*#__PURE__*/function () {
       }
 
       if (!this._nonce) {
-        debugerror('authenticate() | challenge without Digest nonce, authentication aborted');
+        logger.warn('authenticate() | challenge without Digest nonce, authentication aborted');
         return false;
       }
 
       if (!this._realm) {
-        debugerror('authenticate() | challenge without Digest realm, authentication aborted');
+        logger.warn('authenticate() | challenge without Digest realm, authentication aborted');
         return false;
       } // If no plain SIP password is provided.
 
@@ -965,13 +966,13 @@ module.exports = /*#__PURE__*/function () {
       if (!this._credentials.password) {
         // If ha1 is not provided we cannot authenticate.
         if (!this._credentials.ha1) {
-          debugerror('authenticate() | no plain SIP password nor ha1 provided, authentication aborted');
+          logger.warn('authenticate() | no plain SIP password nor ha1 provided, authentication aborted');
           return false;
         } // If the realm does not match the stored realm we cannot authenticate.
 
 
         if (this._credentials.realm !== this._realm) {
-          debugerror('authenticate() | no plain SIP password, and stored `realm` does not match the given `realm`, cannot authenticate [stored:"%s", given:"%s"]', this._credentials.realm, this._realm);
+          logger.warn('authenticate() | no plain SIP password, and stored `realm` does not match the given `realm`, cannot authenticate [stored:"%s", given:"%s"]', this._credentials.realm, this._realm);
           return false;
         }
       } // 'qop' can contain a list of values (Array). Let's choose just one.
@@ -984,7 +985,7 @@ module.exports = /*#__PURE__*/function () {
           this._qop = 'auth';
         } else {
           // Otherwise 'qop' is present but does not contain 'auth' or 'auth-int', so abort here.
-          debugerror('authenticate() | challenge without Digest qop different than "auth" or "auth-int", authentication aborted');
+          logger.warn('authenticate() | challenge without Digest qop different than "auth" or "auth-int", authentication aborted');
           return false;
         }
       } else {
@@ -1021,26 +1022,26 @@ module.exports = /*#__PURE__*/function () {
         // HA2 = MD5(A2) = MD5(method:digestURI).
         a2 = "".concat(this._method, ":").concat(this._uri);
         ha2 = Utils.calculateMD5(a2);
-        debug('authenticate() | using qop=auth [a2:"%s"]', a2); // Response = MD5(HA1:nonce:nonceCount:credentialsNonce:qop:HA2).
+        logger.debug('authenticate() | using qop=auth [a2:"%s"]', a2); // Response = MD5(HA1:nonce:nonceCount:credentialsNonce:qop:HA2).
 
         this._response = Utils.calculateMD5("".concat(this._ha1, ":").concat(this._nonce, ":").concat(this._ncHex, ":").concat(this._cnonce, ":auth:").concat(ha2));
       } else if (this._qop === 'auth-int') {
         // HA2 = MD5(A2) = MD5(method:digestURI:MD5(entityBody)).
         a2 = "".concat(this._method, ":").concat(this._uri, ":").concat(Utils.calculateMD5(body ? body : ''));
         ha2 = Utils.calculateMD5(a2);
-        debug('authenticate() | using qop=auth-int [a2:"%s"]', a2); // Response = MD5(HA1:nonce:nonceCount:credentialsNonce:qop:HA2).
+        logger.debug('authenticate() | using qop=auth-int [a2:"%s"]', a2); // Response = MD5(HA1:nonce:nonceCount:credentialsNonce:qop:HA2).
 
         this._response = Utils.calculateMD5("".concat(this._ha1, ":").concat(this._nonce, ":").concat(this._ncHex, ":").concat(this._cnonce, ":auth-int:").concat(ha2));
       } else if (this._qop === null) {
         // HA2 = MD5(A2) = MD5(method:digestURI).
         a2 = "".concat(this._method, ":").concat(this._uri);
         ha2 = Utils.calculateMD5(a2);
-        debug('authenticate() | using qop=null [a2:"%s"]', a2); // Response = MD5(HA1:nonce:HA2).
+        logger.debug('authenticate() | using qop=null [a2:"%s"]', a2); // Response = MD5(HA1:nonce:HA2).
 
         this._response = Utils.calculateMD5("".concat(this._ha1, ":").concat(this._nonce, ":").concat(ha2));
       }
 
-      debug('authenticate() | response generated');
+      logger.debug('authenticate() | response generated');
       return true;
     }
     /**
@@ -1079,7 +1080,7 @@ module.exports = /*#__PURE__*/function () {
 
   return DigestAuthentication;
 }();
-},{"./Utils":28,"debug":32}],6:[function(require,module,exports){
+},{"./Logger":9,"./Utils":27}],6:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -1098,7 +1099,7 @@ function _wrapNativeSuper(Class) { var _cache = typeof Map === "function" ? new 
 
 function _construct(Parent, args, Class) { if (_isNativeReflectConstruct()) { _construct = Reflect.construct; } else { _construct = function _construct(Parent, args, Class) { var a = [null]; a.push.apply(a, args); var Constructor = Function.bind.apply(Parent, a); var instance = new Constructor(); if (Class) _setPrototypeOf(instance, Class.prototype); return instance; }; } return _construct.apply(null, arguments); }
 
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _isNativeFunction(fn) { return Function.toString.call(fn).indexOf("[native code]") !== -1; }
 
@@ -16096,7 +16097,7 @@ module.exports = function () {
   result.SyntaxError.prototype = Error.prototype;
   return result;
 }();
-},{"./NameAddrHeader":10,"./URI":27}],8:[function(require,module,exports){
+},{"./NameAddrHeader":11,"./URI":26}],8:[function(require,module,exports){
 "use strict";
 
 var pkg = require('../package.json');
@@ -16145,7 +16146,61 @@ module.exports = {
   }
 
 };
-},{"../package.json":40,"./Constants":2,"./Exceptions":6,"./Grammar":7,"./NameAddrHeader":10,"./UA":26,"./URI":27,"./Utils":28,"./WebSocketInterface":29,"debug":32}],9:[function(require,module,exports){
+},{"../package.json":39,"./Constants":2,"./Exceptions":6,"./Grammar":7,"./NameAddrHeader":11,"./UA":25,"./URI":26,"./Utils":27,"./WebSocketInterface":28,"debug":31}],9:[function(require,module,exports){
+"use strict";
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var debug = require('debug');
+
+var APP_NAME = 'JsSIP';
+
+module.exports = /*#__PURE__*/function () {
+  function Logger(prefix) {
+    _classCallCheck(this, Logger);
+
+    if (prefix) {
+      this._debug = debug["default"]("".concat(APP_NAME, ":").concat(prefix));
+      this._warn = debug["default"]("".concat(APP_NAME, ":WARN:").concat(prefix));
+      this._error = debug["default"]("".concat(APP_NAME, ":ERROR:").concat(prefix));
+    } else {
+      this._debug = debug["default"](APP_NAME);
+      this._warn = debug["default"]("".concat(APP_NAME, ":WARN"));
+      this._error = debug["default"]("".concat(APP_NAME, ":ERROR"));
+    }
+    /* eslint-disable no-console */
+
+
+    this._debug.log = console.info.bind(console);
+    this._warn.log = console.warn.bind(console);
+    this._error.log = console.error.bind(console);
+    /* eslint-enable no-console */
+  }
+
+  _createClass(Logger, [{
+    key: "debug",
+    get: function get() {
+      return this._debug;
+    }
+  }, {
+    key: "warn",
+    get: function get() {
+      return this._warn;
+    }
+  }, {
+    key: "error",
+    get: function get() {
+      return this._error;
+    }
+  }]);
+
+  return Logger;
+}();
+},{"debug":31}],10:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -16166,11 +16221,13 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 var EventEmitter = require('events').EventEmitter;
+
+var Logger = require('./Logger');
 
 var JsSIP_C = require('./Constants');
 
@@ -16182,7 +16239,7 @@ var RequestSender = require('./RequestSender');
 
 var Exceptions = require('./Exceptions');
 
-var debug = require('debug')('JsSIP:Message');
+var logger = new Logger('Message');
 
 module.exports = /*#__PURE__*/function (_EventEmitter) {
   _inherits(Message, _EventEmitter);
@@ -16209,21 +16266,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }
 
   _createClass(Message, [{
-    key: "direction",
-    get: function get() {
-      return this._direction;
-    }
-  }, {
-    key: "local_identity",
-    get: function get() {
-      return this._local_identity;
-    }
-  }, {
-    key: "remote_identity",
-    get: function get() {
-      return this._remote_identity;
-    }
-  }, {
     key: "send",
     value: function send(target, body) {
       var _this2 = this;
@@ -16423,11 +16465,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_failed",
     value: function _failed(originator, response, cause) {
-      debug('MESSAGE failed');
+      logger.debug('MESSAGE failed');
 
       this._close();
 
-      debug('emit "failed"');
+      logger.debug('emit "failed"');
       this.emit('failed', {
         originator: originator,
         response: response || null,
@@ -16437,21 +16479,36 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_succeeded",
     value: function _succeeded(originator, response) {
-      debug('MESSAGE succeeded');
+      logger.debug('MESSAGE succeeded');
 
       this._close();
 
-      debug('emit "succeeded"');
+      logger.debug('emit "succeeded"');
       this.emit('succeeded', {
         originator: originator,
         response: response
       });
     }
+  }, {
+    key: "direction",
+    get: function get() {
+      return this._direction;
+    }
+  }, {
+    key: "local_identity",
+    get: function get() {
+      return this._local_identity;
+    }
+  }, {
+    key: "remote_identity",
+    get: function get() {
+      return this._remote_identity;
+    }
   }]);
 
   return Message;
 }(EventEmitter);
-},{"./Constants":2,"./Exceptions":6,"./RequestSender":19,"./SIPMessage":20,"./Utils":28,"debug":32,"events":31}],10:[function(require,module,exports){
+},{"./Constants":2,"./Exceptions":6,"./Logger":9,"./RequestSender":19,"./SIPMessage":20,"./Utils":27,"events":30}],11:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -16465,6 +16522,24 @@ var URI = require('./URI');
 var Grammar = require('./Grammar');
 
 module.exports = /*#__PURE__*/function () {
+  _createClass(NameAddrHeader, null, [{
+    key: "parse",
+
+    /**
+     * Parse the given string and returns a NameAddrHeader instance or undefined if
+     * it is an invalid NameAddrHeader.
+     */
+    value: function parse(name_addr_header) {
+      name_addr_header = Grammar.parse(name_addr_header, 'Name_Addr_Header');
+
+      if (name_addr_header !== -1) {
+        return name_addr_header;
+      } else {
+        return undefined;
+      }
+    }
+  }]);
+
   function NameAddrHeader(uri, display_name, parameters) {
     _classCallCheck(this, NameAddrHeader);
 
@@ -16486,19 +16561,6 @@ module.exports = /*#__PURE__*/function () {
   }
 
   _createClass(NameAddrHeader, [{
-    key: "uri",
-    get: function get() {
-      return this._uri;
-    }
-  }, {
-    key: "display_name",
-    get: function get() {
-      return this._display_name;
-    },
-    set: function set(value) {
-      this._display_name = value === 0 ? '0' : value;
-    }
-  }, {
     key: "setParam",
     value: function setParam(key, value) {
       if (key) {
@@ -16563,451 +16625,39 @@ module.exports = /*#__PURE__*/function () {
 
       return body;
     }
-  }], [{
-    key: "parse",
-    value:
-    /**
-     * Parse the given string and returns a NameAddrHeader instance or undefined if
-     * it is an invalid NameAddrHeader.
-     */
-    function parse(name_addr_header) {
-      name_addr_header = Grammar.parse(name_addr_header, 'Name_Addr_Header');
-
-      if (name_addr_header !== -1) {
-        return name_addr_header;
-      } else {
-        return undefined;
-      }
+  }, {
+    key: "uri",
+    get: function get() {
+      return this._uri;
+    }
+  }, {
+    key: "display_name",
+    get: function get() {
+      return this._display_name;
+    },
+    set: function set(value) {
+      this._display_name = value === 0 ? '0' : value;
     }
   }]);
 
   return NameAddrHeader;
 }();
-},{"./Grammar":7,"./URI":27}],11:[function(require,module,exports){
+},{"./Grammar":7,"./URI":26}],12:[function(require,module,exports){
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-var EventEmitter = require('events').EventEmitter;
-
-var JsSIP_C = require('./Constants');
-
-var Utils = require('./Utils');
-
-var Dialog = require('./Dialog');
-
-var debug = require('debug')('JsSIP:Notifier');
-
-var debugerror = require('debug')('JsSIP:ERROR:Notifier');
-
-debugerror.log = console.warn.bind(console);
-/**
- * Termination codes. 
- */
-
-var C = {
-  // Termination codes.
-  NOTIFY_RESPONSE_TIMEOUT: 0,
-  NOTIFY_TRANSPORT_ERROR: 1,
-  NOTIFY_NON_OK_RESPONSE: 2,
-  NOTIFY_FAILED_AUTHENTICATION: 3,
-  SEND_FINAL_NOTIFY: 4,
-  RECEIVE_UNSUBSCRIBE: 5,
-  SUBSCRIPTION_EXPIRED: 6,
-  // Notifer states
-  STATE_PENDING: 0,
-  STATE_ACTIVE: 1,
-  STATE_TERMINATED: 2
-};
-/**
- * RFC 6665 Notifier implementation.
- */
-
-module.exports = /*#__PURE__*/function (_EventEmitter) {
-  _inherits(Notifier, _EventEmitter);
-
-  var _super = _createSuper(Notifier);
-
-  /**
-   * @param {UA} ua - JsSIP User Agent instance.
-   * @param {IncomingRequest} subscribe - Subscribe request.
-   * @param {string} contentType - Content-Type header value.
-   * @param {NotifierOptions} options - Optional parameters.
-   *   @param {Array<string>}  extraHeaders - Additional SIP headers.
-   *   @param {string} allowEvents - Allow-Events header value.
-   *   @param {boolean} pending - Set initial dialog state as "pending". 
-   */
-  function Notifier(ua, subscribe, contentType, _ref) {
-    var _this;
-
-    var extraHeaders = _ref.extraHeaders,
-        allowEvents = _ref.allowEvents,
-        pending = _ref.pending;
-
-    _classCallCheck(this, Notifier);
-
-    debug('new');
-    _this = _super.call(this);
-
-    if (!subscribe) {
-      throw new TypeError('subscribe is undefined');
-    }
-
-    if (!contentType) {
-      throw new TypeError('contentType is undefined');
-    }
-
-    _this._ua = ua;
-    _this._initial_subscribe = subscribe;
-    _this._expires_timestamp = null;
-    _this._expires_timer = null; // Notifier state: pending, active, terminated. Not used: init, resp_wait.
-
-    _this._state = pending ? C.STATE_PENDING : C.STATE_ACTIVE;
-    _this._is_final_notify_sent = false; // To prevent duplicate emit 'terminated'.
-
-    _this._is_terminated = false; // Optional. Used to build terminated Subscription-State.
-
-    _this._terminated_reason = null;
-    _this._terminated_retry_after = null; // Custom session empty object for high level use.
-
-    _this.data = {};
-    _this._dialog = null;
-    var eventName = subscribe.getHeader('event');
-    _this._content_type = contentType;
-    _this._expires = parseInt(subscribe.getHeader('expires'));
-    _this._headers = Utils.cloneArray(extraHeaders);
-
-    _this._headers.push("Event: ".concat(eventName)); // Use contact from extraHeaders or create it.
-
-
-    _this._contact = _this._headers.find(function (header) {
-      return header.startsWith('Contact');
-    });
-
-    if (!_this._contact) {
-      _this._contact = "Contact: <sip:".concat(subscribe.to.uri.user, "@").concat(Utils.createRandomToken(12), ".invalid;transport=ws>");
-
-      _this._headers.push(_this._contact);
-    }
-
-    if (allowEvents) {
-      _this._headers.push("Allow-Events: ".concat(allowEvents));
-    }
-
-    _this._target = subscribe.from.uri.user;
-    subscribe.to_tag = Utils.newTag(); // Create dialog for normal and fetch SUBSCRIBE
-
-    var dialog = new Dialog(_assertThisInitialized(_this), subscribe, 'UAS');
-
-    if (dialog.error) {
-      debugerror(dialog.error);
-      throw new Error('SUBSCRIBE missed Contact');
-    }
-
-    _this._dialog = dialog;
-
-    if (_this._expires > 0) {
-      // Set expires timer and time-stamp.
-      _this._setExpiresTimer();
-    }
-
-    return _this;
-  }
-  /**
-   * Dialog callback.
-   * Called also for initial subscribe. 
-   * Supported RFC 6665 4.4.3: initial fetch subscribe (with expires: 0).
-   */
-
-
-  _createClass(Notifier, [{
-    key: "C",
-    get: function get() {
-      return C;
-    }
-  }, {
-    key: "receiveRequest",
-    value: function receiveRequest(request) {
-      if (request.method !== JsSIP_C.SUBSCRIBE) {
-        request.reply(405);
-        return;
-      }
-
-      var expiresValue = request.getHeader('expires');
-
-      if (expiresValue === undefined || expiresValue === null) {
-        // Missed header Expires. RFC 6665 3.1.1. Set default expires value.  
-        expiresValue = '900';
-        debug("Missed expires header. Set by default ".concat(expiresValue));
-      }
-
-      this._expires = parseInt(expiresValue);
-      request.reply(200, null, ["Expires: ".concat(this._expires), "".concat(this._contact)]);
-      var body = request.body;
-      var content_type = request.getHeader('content-type');
-      var is_unsubscribe = this._expires === 0;
-
-      if (!is_unsubscribe) {
-        this._setExpiresTimer();
-      }
-
-      debug('emit "subscribe"');
-      this.emit('subscribe', is_unsubscribe, request, body, content_type);
-
-      if (is_unsubscribe) {
-        this._dialogTerminated(C.RECEIVE_UNSUBSCRIBE);
-      }
-    }
-    /**
-     * User API
-     */
-
-    /**
-     * Should be called after creating the Notifier instance and setting the event handlers.
-     */
-
-  }, {
-    key: "start",
-    value: function start() {
-      debug('start()');
-      this.receiveRequest(this._initial_subscribe);
-    }
-    /**
-     * Switch pending dialog state to active.
-     */
-
-  }, {
-    key: "setActiveState",
-    value: function setActiveState() {
-      debug('setActiveState()');
-
-      if (this._state === C.STATE_PENDING) {
-        this._state = C.STATE_ACTIVE;
-      }
-    }
-    /**
-     *  Send the initial and subsequent NOTIFY request.
-     *  @param {string} body - notify request body.
-     */
-
-  }, {
-    key: "notify",
-    value: function notify() {
-      var _this2 = this;
-
-      var body = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      debug('notify()'); // Prevent send notify after final notify.
-
-      if (this._is_final_notify_sent) {
-        debugerror('final notify has sent');
-        return;
-      }
-
-      var subs_state = this._stateNumberToString(this._state);
-
-      if (this._state !== C.STATE_TERMINATED) {
-        var expires = Math.floor((this._expires_timestamp - new Date().getTime()) / 1000);
-
-        if (expires < 0) {
-          expires = 0;
-        }
-
-        subs_state += ";expires=".concat(expires);
-      } else {
-        if (this._terminated_reason) {
-          subs_state += ";reason=".concat(this._terminated_reason);
-        }
-
-        if (this._terminated_retry_after !== null) {
-          subs_state += ";retry-after=".concat(this._terminated_retry_after);
-        }
-      }
-
-      var headers = this._headers.slice();
-
-      headers.push("Subscription-State: ".concat(subs_state));
-
-      if (body) {
-        headers.push("Content-Type: ".concat(this._content_type));
-      }
-
-      if (!this._dialog) {
-        throw new Error('no dialog');
-      }
-
-      this._dialog.sendRequest(JsSIP_C.NOTIFY, {
-        body: body,
-        extraHeaders: headers,
-        eventHandlers: {
-          onRequestTimeout: function onRequestTimeout() {
-            _this2._dialogTerminated(C.NOTIFY_RESPONSE_TIMEOUT);
-          },
-          onTransportError: function onTransportError() {
-            _this2._dialogTerminated(C.NOTIFY_TRANSPORT_ERROR);
-          },
-          onErrorResponse: function onErrorResponse(response) {
-            if (response.status_code === 401 || response.status_code === 407) {
-              _this2._dialogTerminated(C.NOTIFY_FAILED_AUTHENTICATION);
-            } else {
-              _this2._dialogTerminated(C.NOTIFY_NON_OK_RESPONSE);
-            }
-          },
-          onDialogError: function onDialogError() {
-            _this2._dialogTerminated(C.NOTIFY_NON_OK_RESPONSE);
-          }
-        }
-      });
-    }
-    /**
-     *  Terminate. (Send the final NOTIFY request).
-     * 
-     * @param {string} body - Notify message body.
-     * @param {string} reason - Set Subscription-State reason parameter.
-     * @param {number} retryAfter - Set Subscription-State retry-after parameter.
-     */
-
-  }, {
-    key: "terminate",
-    value: function terminate() {
-      var body = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      var reason = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-      var retryAfter = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-      debug('terminate()');
-      this._state = C.STATE_TERMINATED;
-      this._terminated_reason = reason;
-      this._terminated_retry_after = retryAfter;
-      this.notify(body);
-      this._is_final_notify_sent = true;
-
-      this._dialogTerminated(C.SEND_FINAL_NOTIFY);
-    }
-    /**
-     * Get dialog state. 
-     */
-
-  }, {
-    key: "state",
-    get: function get() {
-      return this._state;
-    }
-    /**
-     * Get dialog id.
-     */
-
-  }, {
-    key: "id",
-    get: function get() {
-      return this._dialog ? this._dialog.id : null;
-    }
-    /**
-     * Private API
-     */
-
-  }, {
-    key: "_dialogTerminated",
-    value: function _dialogTerminated(termination_code) {
-      if (this._is_terminated) {
-        return;
-      }
-
-      this._is_terminated = true;
-      this._state = C.STATE_TERMINATED;
-      clearTimeout(this._expires_timer);
-
-      if (this._dialog) {
-        this._dialog.terminate();
-      }
-
-      var send_final_notify = termination_code === C.SUBSCRIPTION_EXPIRED;
-      debug("emit \"terminated\" code=".concat(termination_code, ", send final notify=").concat(send_final_notify));
-      this.emit('terminated', termination_code, send_final_notify);
-    }
-  }, {
-    key: "_setExpiresTimer",
-    value: function _setExpiresTimer() {
-      var _this3 = this;
-
-      this._expires_timestamp = new Date().getTime() + this._expires * 1000;
-      clearTimeout(this._expires_timer);
-      this._expires_timer = setTimeout(function () {
-        if (_this3._is_final_notify_sent) {
-          return;
-        }
-
-        _this3._terminated_reason = 'timeout';
-        _this3._is_final_notify_sent = true;
-
-        _this3.notify();
-
-        _this3._dialogTerminated(C.SUBSCRIPTION_EXPIRED);
-      }, this._expires * 1000);
-    }
-  }, {
-    key: "_stateNumberToString",
-    value: function _stateNumberToString(state) {
-      switch (state) {
-        case C.STATE_PENDING:
-          return 'pending';
-
-        case C.STATE_ACTIVE:
-          return 'active';
-
-        case C.STATE_TERMINATED:
-          return 'terminated';
-
-        default:
-          throw new TypeError('wrong state value');
-      }
-    }
-  }], [{
-    key: "C",
-    get:
-    /**
-     * Expose C object.
-     */
-    function get() {
-      return C;
-    }
-  }]);
-
-  return Notifier;
-}(EventEmitter);
-},{"./Constants":2,"./Dialog":3,"./Utils":28,"debug":32,"events":31}],12:[function(require,module,exports){
-"use strict";
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
+var Logger = require('./Logger');
+
 var Grammar = require('./Grammar');
 
 var SIPMessage = require('./SIPMessage');
 
-var debugerror = require('debug')('JsSIP:ERROR:Parser');
-
-debugerror.log = console.warn.bind(console);
+var logger = new Logger('Parser');
 /**
  * Parse SIP Message
  */
@@ -17018,7 +16668,7 @@ exports.parseMessage = function (data, ua) {
   var headerEnd = data.indexOf('\r\n');
 
   if (headerEnd === -1) {
-    debugerror('parseMessage() | no CRLF found, not a SIP message');
+    logger.warn('parseMessage() | no CRLF found, not a SIP message');
     return;
   } // Parse first line. Check if it is a Request or a Reply.
 
@@ -17027,7 +16677,7 @@ exports.parseMessage = function (data, ua) {
   var parsed = Grammar.parse(firstLine, 'Request_Response');
 
   if (parsed === -1) {
-    debugerror("parseMessage() | error parsing first line of SIP message: \"".concat(firstLine, "\""));
+    logger.warn("parseMessage() | error parsing first line of SIP message: \"".concat(firstLine, "\""));
     return;
   } else if (!parsed.status_code) {
     message = new SIPMessage.IncomingRequest(ua);
@@ -17053,14 +16703,14 @@ exports.parseMessage = function (data, ua) {
       break;
     } // Data.indexOf returned -1 due to a malformed message.
     else if (headerEnd === -1) {
-        debugerror('parseMessage() | malformed message');
+        logger.warn('parseMessage() | malformed message');
         return;
       }
 
     parsed = parseHeader(message, data, headerStart, headerEnd);
 
     if (parsed !== true) {
-      debugerror('parseMessage() |', parsed.error);
+      logger.warn('parseMessage() |', parsed.error);
       return;
     }
 
@@ -17324,12 +16974,12 @@ function parseHeader(message, data, headerStart, headerEnd) {
     return true;
   }
 }
-},{"./Grammar":7,"./SIPMessage":20,"debug":32}],13:[function(require,module,exports){
+},{"./Grammar":7,"./Logger":9,"./SIPMessage":20}],13:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -17351,7 +17001,7 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
@@ -17359,6 +17009,8 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 var EventEmitter = require('events').EventEmitter;
 
 var sdp_transform = require('sdp-transform');
+
+var Logger = require('./Logger');
 
 var JsSIP_C = require('./Constants');
 
@@ -17386,11 +17038,7 @@ var RTCSession_ReferSubscriber = require('./RTCSession/ReferSubscriber');
 
 var URI = require('./URI');
 
-var debug = require('debug')('JsSIP:RTCSession');
-
-var debugerror = require('debug')('JsSIP:ERROR:RTCSession');
-
-debugerror.log = console.warn.bind(console);
+var logger = new Logger('RTCSession');
 var C = {
   // RTCSession states.
   STATUS_NULL: 0,
@@ -17415,12 +17063,23 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
   var _super = _createSuper(RTCSession);
 
+  _createClass(RTCSession, null, [{
+    key: "C",
+
+    /**
+     * Expose C object.
+     */
+    get: function get() {
+      return C;
+    }
+  }]);
+
   function RTCSession(ua) {
     var _this;
 
     _classCallCheck(this, RTCSession);
 
-    debug('new');
+    logger.debug('new');
     _this = _super.call(this);
     _this._id = null;
     _this._ua = ua;
@@ -17494,70 +17153,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
 
   _createClass(RTCSession, [{
-    key: "C",
-    get: function get() {
-      return C;
-    } // Expose session failed/ended causes as a property of the RTCSession instance.
-
-  }, {
-    key: "causes",
-    get: function get() {
-      return JsSIP_C.causes;
-    }
-  }, {
-    key: "id",
-    get: function get() {
-      return this._id;
-    }
-  }, {
-    key: "connection",
-    get: function get() {
-      return this._connection;
-    }
-  }, {
-    key: "contact",
-    get: function get() {
-      return this._contact;
-    }
-  }, {
-    key: "direction",
-    get: function get() {
-      return this._direction;
-    }
-  }, {
-    key: "local_identity",
-    get: function get() {
-      return this._local_identity;
-    }
-  }, {
-    key: "remote_identity",
-    get: function get() {
-      return this._remote_identity;
-    }
-  }, {
-    key: "start_time",
-    get: function get() {
-      return this._start_time;
-    }
-  }, {
-    key: "end_time",
-    get: function get() {
-      return this._end_time;
-    }
-  }, {
-    key: "data",
-    get: function get() {
-      return this._data;
-    },
-    set: function set(_data) {
-      this._data = _data;
-    }
-  }, {
-    key: "status",
-    get: function get() {
-      return this._status;
-    }
-  }, {
     key: "isInProgress",
     value: function isInProgress() {
       switch (this._status) {
@@ -17618,7 +17213,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function connect(target) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var initCallback = arguments.length > 2 ? arguments[2] : undefined;
-      debug('connect()');
+      logger.debug('connect()');
       var originalTarget = target;
       var eventHandlers = Utils.cloneObject(options.eventHandlers);
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
@@ -17731,7 +17326,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function init_incoming(request, initCallback) {
       var _this2 = this;
 
-      debug('init_incoming()');
+      logger.debug('init_incoming()');
       var expires;
       var contentType = request.hasHeader('Content-Type') ? request.getHeader('Content-Type').toLowerCase() : undefined; // Check body and content type.
 
@@ -17822,7 +17417,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var _this3 = this;
 
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      debug('answer()');
+      logger.debug('answer()');
       var request = this._request;
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
       var mediaConstraints = Utils.cloneObject(options.mediaConstraints);
@@ -17987,7 +17582,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
               _this3._failed('local', null, JsSIP_C.causes.USER_DENIED_MEDIA_ACCESS);
 
-              debugerror('emit "getusermediafailed" [error:%o]', error);
+              logger.warn('emit "getusermediafailed" [error:%o]', error);
 
               _this3.emit('getusermediafailed', error);
 
@@ -18018,7 +17613,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           type: 'offer',
           sdp: request.body
         };
-        debug('emit "sdp"');
+        logger.debug('emit "sdp"');
 
         _this3.emit('sdp', e);
 
@@ -18033,7 +17628,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
           _this3._failed('system', null, JsSIP_C.causes.WEBRTC_ERROR);
 
-          debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
+          logger.warn('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
           _this3.emit('peerconnection:setremotedescriptionfailed', error);
 
@@ -18084,7 +17679,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           return;
         }
 
-        debugerror(error);
+        logger.warn(error);
       });
     }
     /**
@@ -18097,7 +17692,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var _this4 = this;
 
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      debug('terminate()');
+      logger.debug('terminate()');
       var cause = options.cause || JsSIP_C.causes.BYE;
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
       var body = options.body;
@@ -18114,7 +17709,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         case C.STATUS_NULL:
         case C.STATUS_INVITE_SENT:
         case C.STATUS_1XX_RECEIVED:
-          debug('canceling session');
+          logger.debug('canceling session');
 
           if (status_code && (status_code < 200 || status_code >= 700)) {
             throw new TypeError("Invalid status_code: ".concat(status_code));
@@ -18140,7 +17735,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
         case C.STATUS_WAITING_FOR_ANSWER:
         case C.STATUS_ANSWERED:
-          debug('rejecting session');
+          logger.debug('rejecting session');
           status_code = status_code || 480;
 
           if (status_code < 300 || status_code >= 700) {
@@ -18155,7 +17750,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
         case C.STATUS_WAITING_FOR_ACK:
         case C.STATUS_CONFIRMED:
-          debug('terminating session');
+          logger.debug('terminating session');
           reason_phrase = options.reason_phrase || JsSIP_C.REASON_PHRASE[status_code] || '';
 
           if (status_code && (status_code < 200 || status_code >= 700)) {
@@ -18221,7 +17816,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     key: "sendDTMF",
     value: function sendDTMF(tones) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      debug('sendDTMF() | tones: %s', tones);
+      logger.debug('sendDTMF() | tones: %s', tones);
       var position = 0;
       var duration = options.duration || null;
       var interToneGap = options.interToneGap || null;
@@ -18232,7 +17827,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       } // Check Session Status.
 
 
-      if (this._status !== C.STATUS_CONFIRMED && this._status !== C.STATUS_WAITING_FOR_ACK) {
+      if (this._status !== C.STATUS_CONFIRMED && this._status !== C.STATUS_WAITING_FOR_ACK && this._status !== C.STATUS_1XX_RECEIVED) {
         throw new Exceptions.InvalidStateError(this._status);
       } // Check Transport type.
 
@@ -18257,10 +17852,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       } else if (!duration) {
         duration = RTCSession_DTMF.C.DEFAULT_DURATION;
       } else if (duration < RTCSession_DTMF.C.MIN_DURATION) {
-        debug("\"duration\" value is lower than the minimum allowed, setting it to ".concat(RTCSession_DTMF.C.MIN_DURATION, " milliseconds"));
+        logger.debug("\"duration\" value is lower than the minimum allowed, setting it to ".concat(RTCSession_DTMF.C.MIN_DURATION, " milliseconds"));
         duration = RTCSession_DTMF.C.MIN_DURATION;
       } else if (duration > RTCSession_DTMF.C.MAX_DURATION) {
-        debug("\"duration\" value is greater than the maximum allowed, setting it to ".concat(RTCSession_DTMF.C.MAX_DURATION, " milliseconds"));
+        logger.debug("\"duration\" value is greater than the maximum allowed, setting it to ".concat(RTCSession_DTMF.C.MAX_DURATION, " milliseconds"));
         duration = RTCSession_DTMF.C.MAX_DURATION;
       } else {
         duration = Math.abs(duration);
@@ -18273,7 +17868,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       } else if (!interToneGap) {
         interToneGap = RTCSession_DTMF.C.DEFAULT_INTER_TONE_GAP;
       } else if (interToneGap < RTCSession_DTMF.C.MIN_INTER_TONE_GAP) {
-        debug("\"interToneGap\" value is lower than the minimum allowed, setting it to ".concat(RTCSession_DTMF.C.MIN_INTER_TONE_GAP, " milliseconds"));
+        logger.debug("\"interToneGap\" value is lower than the minimum allowed, setting it to ".concat(RTCSession_DTMF.C.MIN_INTER_TONE_GAP, " milliseconds"));
         interToneGap = RTCSession_DTMF.C.MIN_INTER_TONE_GAP;
       } else {
         interToneGap = Math.abs(interToneGap);
@@ -18340,9 +17935,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     key: "sendInfo",
     value: function sendInfo(contentType, body) {
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      debug('sendInfo()'); // Check Session Status.
+      logger.debug('sendInfo()'); // Check Session Status.
 
-      if (this._status !== C.STATUS_CONFIRMED && this._status !== C.STATUS_WAITING_FOR_ACK) {
+      if (this._status !== C.STATUS_CONFIRMED && this._status !== C.STATUS_WAITING_FOR_ACK && this._status !== C.STATUS_1XX_RECEIVED) {
         throw new Exceptions.InvalidStateError(this._status);
       }
 
@@ -18360,7 +17955,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         audio: true,
         video: false
       };
-      debug('mute()');
+      logger.debug('mute()');
       var audioMuted = false,
           videoMuted = false;
 
@@ -18396,7 +17991,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         audio: true,
         video: true
       };
-      debug('unmute()');
+      logger.debug('unmute()');
       var audioUnMuted = false,
           videoUnMuted = false;
 
@@ -18436,7 +18031,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       var done = arguments.length > 1 ? arguments[1] : undefined;
-      debug('hold()');
+      logger.debug('hold()');
 
       if (this._status !== C.STATUS_WAITING_FOR_ACK && this._status !== C.STATUS_CONFIRMED) {
         return false;
@@ -18491,7 +18086,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       var done = arguments.length > 1 ? arguments[1] : undefined;
-      debug('unhold()');
+      logger.debug('unhold()');
 
       if (this._status !== C.STATUS_WAITING_FOR_ACK && this._status !== C.STATUS_CONFIRMED) {
         return false;
@@ -18546,7 +18141,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       var done = arguments.length > 1 ? arguments[1] : undefined;
-      debug('renegotiate()');
+      logger.debug('renegotiate()');
       var rtcOfferConstraints = options.rtcOfferConstraints || null;
 
       if (this._status !== C.STATUS_WAITING_FOR_ACK && this._status !== C.STATUS_CONFIRMED) {
@@ -18600,7 +18195,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function refer(target, options) {
       var _this9 = this;
 
-      debug('refer()');
+      logger.debug('refer()');
       var originalTarget = target;
 
       if (this._status !== C.STATUS_WAITING_FOR_ACK && this._status !== C.STATUS_CONFIRMED) {
@@ -18638,7 +18233,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "sendRequest",
     value: function sendRequest(method, options) {
-      debug('sendRequest()');
+      logger.debug('sendRequest()');
       return this._dialog.sendRequest(method, options);
     }
     /**
@@ -18650,7 +18245,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function receiveRequest(request) {
       var _this10 = this;
 
-      debug('receiveRequest()');
+      logger.debug('receiveRequest()');
 
       if (request.method === JsSIP_C.CANCEL) {
         /* RFC3261 15 States that a UAS may have accepted an invitation while a CANCEL
@@ -18698,7 +18293,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
                 type: 'answer',
                 sdp: request.body
               };
-              debug('emit "sdp"');
+              logger.debug('emit "sdp"');
               this.emit('sdp', e);
               var answer = new RTCSessionDescription({
                 type: 'answer',
@@ -18716,7 +18311,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
                   status_code: 488
                 });
 
-                debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
+                logger.warn('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
                 _this10.emit('peerconnection:setremotedescriptionfailed', error);
               });
@@ -18812,7 +18407,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "onTransportError",
     value: function onTransportError() {
-      debugerror('onTransportError()');
+      logger.warn('onTransportError()');
 
       if (this._status !== C.STATUS_TERMINATED) {
         this.terminate({
@@ -18825,7 +18420,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "onRequestTimeout",
     value: function onRequestTimeout() {
-      debugerror('onRequestTimeout()');
+      logger.warn('onRequestTimeout()');
 
       if (this._status !== C.STATUS_TERMINATED) {
         this.terminate({
@@ -18838,7 +18433,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "onDialogError",
     value: function onDialogError() {
-      debugerror('onDialogError()');
+      logger.warn('onDialogError()');
 
       if (this._status !== C.STATUS_TERMINATED) {
         this.terminate({
@@ -18852,14 +18447,14 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "newDTMF",
     value: function newDTMF(data) {
-      debug('newDTMF()');
+      logger.debug('newDTMF()');
       this.emit('newDTMF', data);
     } // Called from Info handler.
 
   }, {
     key: "newInfo",
     value: function newInfo(data) {
-      debug('newInfo()');
+      logger.debug('newInfo()');
       this.emit('newInfo', data);
     }
     /**
@@ -18870,19 +18465,19 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     key: "_isReadyToReOffer",
     value: function _isReadyToReOffer() {
       if (!this._rtcReady) {
-        debug('_isReadyToReOffer() | internal WebRTC status not ready');
+        logger.debug('_isReadyToReOffer() | internal WebRTC status not ready');
         return false;
       } // No established yet.
 
 
       if (!this._dialog) {
-        debug('_isReadyToReOffer() | session not established yet');
+        logger.debug('_isReadyToReOffer() | session not established yet');
         return false;
       } // Another INVITE transaction is in progress.
 
 
       if (this._dialog.uac_pending_reply === true || this._dialog.uas_pending_reply === true) {
-        debug('_isReadyToReOffer() | there is another INVITE/UPDATE transaction in progress');
+        logger.debug('_isReadyToReOffer() | there is another INVITE/UPDATE transaction in progress');
         return false;
       }
 
@@ -18891,10 +18486,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_close",
     value: function _close() {
-      debug('close()'); // Close local MediaStream if it was not given by the user.
+      logger.debug('close()'); // Close local MediaStream if it was not given by the user.
 
       if (this._localMediaStream && this._localMediaStreamLocallyGenerated) {
-        debug('close() | closing local MediaStream');
+        logger.debug('close() | closing local MediaStream');
         Utils.closeMediaStream(this._localMediaStream);
       }
 
@@ -18908,7 +18503,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         try {
           this._connection.close();
         } catch (error) {
-          debugerror('close() | error closing the RTCPeerConnection: %o', error);
+          logger.warn('close() | error closing the RTCPeerConnection: %o', error);
         }
       } // Terminate signaling.
       // Clear SIP timers.
@@ -18995,7 +18590,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       this._timers.ackTimer = setTimeout(function () {
         if (_this11._status === C.STATUS_WAITING_FOR_ACK) {
-          debug('no ACK received, terminating the session');
+          logger.debug('no ACK received, terminating the session');
           clearTimeout(_this11._timers.invite2xxTimer);
 
           _this11.sendRequest(JsSIP_C.BYE);
@@ -19023,7 +18618,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         }
       });
 
-      debug('emit "peerconnection"');
+      logger.debug('emit "peerconnection"');
       this.emit('peerconnection', {
         peerconnection: this._connection
       });
@@ -19033,7 +18628,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function _createLocalDescription(type, constraints) {
       var _this13 = this;
 
-      debug('createLocalDescription()');
+      logger.debug('createLocalDescription()');
       if (type !== 'offer' && type !== 'answer') throw new Error("createLocalDescription() | invalid type \"".concat(type, "\""));
       var connection = this._connection;
       this._rtcReady = false;
@@ -19041,7 +18636,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       .then(function () {
         if (type === 'offer') {
           return connection.createOffer(constraints)["catch"](function (error) {
-            debugerror('emit "peerconnection:createofferfailed" [error:%o]', error);
+            logger.warn('emit "peerconnection:createofferfailed" [error:%o]', error);
 
             _this13.emit('peerconnection:createofferfailed', error);
 
@@ -19049,7 +18644,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           });
         } else {
           return connection.createAnswer(constraints)["catch"](function (error) {
-            debugerror('emit "peerconnection:createanswerfailed" [error:%o]', error);
+            logger.warn('emit "peerconnection:createanswerfailed" [error:%o]', error);
 
             _this13.emit('peerconnection:createanswerfailed', error);
 
@@ -19060,7 +18655,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       .then(function (desc) {
         return connection.setLocalDescription(desc)["catch"](function (error) {
           _this13._rtcReady = true;
-          debugerror('emit "peerconnection:setlocaldescriptionfailed" [error:%o]', error);
+          logger.warn('emit "peerconnection:setlocaldescriptionfailed" [error:%o]', error);
 
           _this13.emit('peerconnection:setlocaldescriptionfailed', error);
 
@@ -19075,7 +18670,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             type: type,
             sdp: connection.localDescription.sdp
           };
-          debug('emit "sdp"');
+          logger.debug('emit "sdp"');
 
           _this13.emit('sdp', e);
 
@@ -19098,7 +18693,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
               type: type,
               sdp: connection.localDescription.sdp
             };
-            debug('emit "sdp"');
+            logger.debug('emit "sdp"');
 
             _this13.emit('sdp', e);
 
@@ -19144,7 +18739,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           early_dialog = new Dialog(this, message, type, Dialog.C.STATUS_EARLY); // Dialog has been successfully created.
 
           if (early_dialog.error) {
-            debug(early_dialog.error);
+            logger.debug(early_dialog.error);
 
             this._failed('remote', message, JsSIP_C.causes.INTERNAL_ERROR);
 
@@ -19170,7 +18765,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           var dialog = new Dialog(this, message, type);
 
           if (dialog.error) {
-            debug(dialog.error);
+            logger.debug(dialog.error);
 
             this._failed('remote', message, JsSIP_C.causes.INTERNAL_ERROR);
 
@@ -19190,7 +18785,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function _receiveReinvite(request) {
       var _this14 = this;
 
-      debug('receiveReinvite()');
+      logger.debug('receiveReinvite()');
       var contentType = request.hasHeader('Content-Type') ? request.getHeader('Content-Type').toLowerCase() : undefined;
       var data = {
         request: request,
@@ -19247,7 +18842,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
 
       if (contentType !== 'application/sdp') {
-        debug('invalid Content-Type');
+        logger.debug('invalid Content-Type');
         request.reply(415);
         return;
       }
@@ -19260,7 +18855,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
         sendAnswer.call(_this14, desc);
       })["catch"](function (error) {
-        debugerror(error);
+        logger.warn(error);
       });
 
       function sendAnswer(desc) {
@@ -19296,7 +18891,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function _receiveUpdate(request) {
       var _this16 = this;
 
-      debug('receiveUpdate()');
+      logger.debug('receiveUpdate()');
       var contentType = request.hasHeader('Content-Type') ? request.getHeader('Content-Type').toLowerCase() : undefined;
       var data = {
         request: request,
@@ -19336,7 +18931,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       }
 
       if (contentType !== 'application/sdp') {
-        debug('invalid Content-Type');
+        logger.debug('invalid Content-Type');
         request.reply(415);
         return;
       }
@@ -19349,7 +18944,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
         sendAnswer.call(_this16, desc);
       })["catch"](function (error) {
-        debugerror(error);
+        logger.warn(error);
       });
 
       function sendAnswer(desc) {
@@ -19369,7 +18964,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function _processInDialogSdpOffer(request) {
       var _this17 = this;
 
-      debug('_processInDialogSdpOffer()');
+      logger.debug('_processInDialogSdpOffer()');
       var sdp = request.parseSDP();
       var hold = false;
 
@@ -19405,7 +19000,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         type: 'offer',
         sdp: request.body
       };
-      debug('emit "sdp"');
+      logger.debug('emit "sdp"');
       this.emit('sdp', e);
       var offer = new RTCSessionDescription({
         type: 'offer',
@@ -19419,7 +19014,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
         return _this17._connection.setRemoteDescription(offer)["catch"](function (error) {
           request.reply(488);
-          debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
+          logger.warn('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
           _this17.emit('peerconnection:setremotedescriptionfailed', error);
 
@@ -19447,11 +19042,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
         return _this17._createLocalDescription('answer', _this17._rtcAnswerConstraints)["catch"](function (error) {
           request.reply(500);
-          debugerror('emit "peerconnection:createtelocaldescriptionfailed" [error:%o]', error);
+          logger.warn('emit "peerconnection:createtelocaldescriptionfailed" [error:%o]', error);
           throw error;
         });
       })["catch"](function (error) {
-        debugerror('_processInDialogSdpOffer() failed [error: %o]', error);
+        logger.warn('_processInDialogSdpOffer() failed [error: %o]', error);
       });
       return this._connectionPromiseQueue;
     }
@@ -19464,16 +19059,16 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function _receiveRefer(request) {
       var _this18 = this;
 
-      debug('receiveRefer()');
+      logger.debug('receiveRefer()');
 
       if (!request.refer_to) {
-        debug('no Refer-To header field present in REFER');
+        logger.debug('no Refer-To header field present in REFER');
         request.reply(400);
         return;
       }
 
       if (request.refer_to.uri.scheme !== JsSIP_C.SIP) {
-        debug('Refer-To header field points to a non-SIP URI scheme');
+        logger.debug('Refer-To header field points to a non-SIP URI scheme');
         request.reply(416);
         return;
       } // Reply before the transaction timer expires.
@@ -19481,7 +19076,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       request.reply(202);
       var notifier = new RTCSession_ReferNotifier(this, request.cseq);
-      debug('emit "refer"'); // Emit 'refer'.
+      logger.debug('emit "refer"'); // Emit 'refer'.
 
       this.emit('refer', {
         request: request,
@@ -19541,7 +19136,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_receiveNotify",
     value: function _receiveNotify(request) {
-      debug('receiveNotify()');
+      logger.debug('receiveNotify()');
 
       if (!request.event) {
         request.reply(400);
@@ -19588,7 +19183,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function _receiveReplaces(request) {
       var _this20 = this;
 
-      debug('receiveReplaces()');
+      logger.debug('receiveReplaces()');
 
       function _accept2(initCallback) {
         var _this19 = this;
@@ -19606,7 +19201,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       }
 
       function _reject2() {
-        debug('Replaced INVITE rejected by the user');
+        logger.debug('Replaced INVITE rejected by the user');
         request.reply(486);
       } // Emit 'replace'.
 
@@ -19662,7 +19257,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
               _this21._failed('local', null, JsSIP_C.causes.USER_DENIED_MEDIA_ACCESS);
 
-              debugerror('emit "getusermediafailed" [error:%o]', error);
+              logger.warn('emit "getusermediafailed" [error:%o]', error);
 
               _this21.emit('getusermediafailed', error);
 
@@ -19697,7 +19292,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
         _this21._request.body = desc;
         _this21._status = C.STATUS_INVITE_SENT;
-        debug('emit "sending" [request:%o]', _this21._request); // Emit 'sending' so the app can mangle the body before the request is sent.
+        logger.debug('emit "sending" [request:%o]', _this21._request); // Emit 'sending' so the app can mangle the body before the request is sent.
 
         _this21.emit('sending', {
           request: _this21._request
@@ -19709,7 +19304,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           return;
         }
 
-        debugerror(error);
+        logger.warn(error);
       });
     }
     /**
@@ -19724,7 +19319,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       });
 
       if (!(sender && sender.dtmf)) {
-        debugerror('sendDTMF() | no local audio track to send DTMF with');
+        logger.warn('sendDTMF() | no local audio track to send DTMF with');
         return;
       }
 
@@ -19739,7 +19334,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function _receiveInviteResponse(response) {
       var _this22 = this;
 
-      debug('receiveInviteResponse()'); // Handle 2XX retransmissions and responses from forked requests.
+      logger.debug('receiveInviteResponse()'); // Handle 2XX retransmissions and responses from forked requests.
 
       if (this._dialog && response.status_code >= 200 && response.status_code <= 299) {
         /*
@@ -19754,7 +19349,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             var dialog = new Dialog(this, response, 'UAC');
 
             if (dialog.error !== undefined) {
-              debug(dialog.error);
+              logger.debug(dialog.error);
               return;
             }
 
@@ -19788,7 +19383,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           {
             // Do nothing with 1xx responses without To tag.
             if (!response.to_tag) {
-              debug('1xx response received without to tag');
+              logger.debug('1xx response received without to tag');
               break;
             } // Create Early Dialog if 1XX comes with contact.
 
@@ -19813,7 +19408,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
               type: 'answer',
               sdp: response.body
             };
-            debug('emit "sdp"');
+            logger.debug('emit "sdp"');
             this.emit('sdp', e);
             var answer = new RTCSessionDescription({
               type: 'answer',
@@ -19824,7 +19419,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             }).then(function () {
               return _this22._progress('remote', response);
             })["catch"](function (error) {
-              debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
+              logger.warn('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
               _this22.emit('peerconnection:setremotedescriptionfailed', error);
             });
@@ -19853,7 +19448,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
               type: 'answer',
               sdp: response.body
             };
-            debug('emit "sdp"');
+            logger.debug('emit "sdp"');
             this.emit('sdp', _e);
 
             var _answer = new RTCSessionDescription({
@@ -19888,7 +19483,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
                 _this22._failed('remote', response, JsSIP_C.causes.BAD_MEDIA_DESCRIPTION);
 
-                debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
+                logger.warn('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
                 _this22.emit('peerconnection:setremotedescriptionfailed', error);
               });
@@ -19914,7 +19509,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var _this23 = this;
 
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      debug('sendReinvite()');
+      logger.debug('sendReinvite()');
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
       var eventHandlers = Utils.cloneObject(options.eventHandlers);
       var rtcOfferConstraints = options.rtcOfferConstraints || this._rtcOfferConstraints || null;
@@ -19935,7 +19530,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           type: 'offer',
           sdp: sdp
         };
-        debug('emit "sdp"');
+        logger.debug('emit "sdp"');
 
         _this23.emit('sdp', e);
 
@@ -19998,7 +19593,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           type: 'answer',
           sdp: response.body
         };
-        debug('emit "sdp"');
+        logger.debug('emit "sdp"');
         this.emit('sdp', e);
         var answer = new RTCSessionDescription({
           type: 'answer',
@@ -20012,7 +19607,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           }
         })["catch"](function (error) {
           onFailed.call(_this24);
-          debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
+          logger.warn('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
           _this24.emit('peerconnection:setremotedescriptionfailed', error);
         });
@@ -20034,7 +19629,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var _this25 = this;
 
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      debug('sendUpdate()');
+      logger.debug('sendUpdate()');
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
       var eventHandlers = Utils.cloneObject(options.eventHandlers);
       var rtcOfferConstraints = options.rtcOfferConstraints || this._rtcOfferConstraints || null;
@@ -20057,7 +19652,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             type: 'offer',
             sdp: sdp
           };
-          debug('emit "sdp"');
+          logger.debug('emit "sdp"');
 
           _this25.emit('sdp', e);
 
@@ -20146,7 +19741,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             type: 'answer',
             sdp: response.body
           };
-          debug('emit "sdp"');
+          logger.debug('emit "sdp"');
           this.emit('sdp', e);
           var answer = new RTCSessionDescription({
             type: 'answer',
@@ -20160,7 +19755,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             }
           })["catch"](function (error) {
             onFailed.call(_this26);
-            debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
+            logger.warn('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
             _this26.emit('peerconnection:setremotedescriptionfailed', error);
           });
@@ -20179,7 +19774,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_acceptAndTerminate",
     value: function _acceptAndTerminate(response, status_code, reason_phrase) {
-      debug('acceptAndTerminate()');
+      logger.debug('acceptAndTerminate()');
       var extraHeaders = [];
 
       if (status_code) {
@@ -20212,7 +19807,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       sdp = sdp_transform.parse(sdp); // Local hold.
 
       if (this._localHold && !this._remoteHold) {
-        debug('mangleOffer() | me on hold, mangling offer');
+        logger.debug('mangleOffer() | me on hold, mangling offer');
 
         var _iterator5 = _createForOfIteratorHelper(sdp.media),
             _step5;
@@ -20240,7 +19835,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         }
       } // Local and remote hold.
       else if (this._localHold && this._remoteHold) {
-          debug('mangleOffer() | both on hold, mangling offer');
+          logger.debug('mangleOffer() | both on hold, mangling offer');
 
           var _iterator6 = _createForOfIteratorHelper(sdp.media),
               _step6;
@@ -20262,7 +19857,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           }
         } // Remote hold.
         else if (this._remoteHold) {
-            debug('mangleOffer() | remote on hold, mangling offer');
+            logger.debug('mangleOffer() | remote on hold, mangling offer');
 
             var _iterator7 = _createForOfIteratorHelper(sdp.media),
                 _step7;
@@ -20384,7 +19979,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             return;
           }
 
-          debug('runSessionTimer() | sending session refresh request');
+          logger.debug('runSessionTimer() | sending session refresh request');
 
           if (_this27._sessionTimers.refreshMethod === JsSIP_C.UPDATE) {
             _this27._sendUpdate();
@@ -20399,7 +19994,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
               return;
             }
 
-            debugerror('runSessionTimer() | timer expired, terminating the session');
+            logger.warn('runSessionTimer() | timer expired, terminating the session');
 
             _this27.terminate({
               cause: JsSIP_C.causes.REQUEST_TIMEOUT,
@@ -20454,7 +20049,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_newRTCSession",
     value: function _newRTCSession(originator, request) {
-      debug('newRTCSession()');
+      logger.debug('newRTCSession()');
 
       this._ua.newRTCSession(this, {
         originator: originator,
@@ -20465,8 +20060,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_connecting",
     value: function _connecting(request) {
-      debug('session connecting');
-      debug('emit "connecting"');
+      logger.debug('session connecting');
+      logger.debug('emit "connecting"');
       this.emit('connecting', {
         request: request
       });
@@ -20474,8 +20069,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_progress",
     value: function _progress(originator, response) {
-      debug('session progress');
-      debug('emit "progress"');
+      logger.debug('session progress');
+      logger.debug('emit "progress"');
       this.emit('progress', {
         originator: originator,
         response: response || null
@@ -20484,9 +20079,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_accepted",
     value: function _accepted(originator, message) {
-      debug('session accepted');
+      logger.debug('session accepted');
       this._start_time = new Date();
-      debug('emit "accepted"');
+      logger.debug('emit "accepted"');
       this.emit('accepted', {
         originator: originator,
         response: message || null
@@ -20495,9 +20090,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_confirmed",
     value: function _confirmed(originator, ack) {
-      debug('session confirmed');
+      logger.debug('session confirmed');
       this._is_confirmed = true;
-      debug('emit "confirmed"');
+      logger.debug('emit "confirmed"');
       this.emit('confirmed', {
         originator: originator,
         ack: ack || null
@@ -20506,12 +20101,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_ended",
     value: function _ended(originator, message, cause) {
-      debug('session ended');
+      logger.debug('session ended');
       this._end_time = new Date();
 
       this._close();
 
-      debug('emit "ended"');
+      logger.debug('emit "ended"');
       this.emit('ended', {
         originator: originator,
         message: message || null,
@@ -20521,9 +20116,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_failed",
     value: function _failed(originator, message, cause) {
-      debug('session failed'); // Emit private '_failed' event first.
+      logger.debug('session failed'); // Emit private '_failed' event first.
 
-      debug('emit "_failed"');
+      logger.debug('emit "_failed"');
       this.emit('_failed', {
         originator: originator,
         message: message || null,
@@ -20532,7 +20127,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       this._close();
 
-      debug('emit "failed"');
+      logger.debug('emit "failed"');
       this.emit('failed', {
         originator: originator,
         message: message || null,
@@ -20542,11 +20137,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_onhold",
     value: function _onhold(originator) {
-      debug('session onhold');
+      logger.debug('session onhold');
 
       this._setLocalMediaStatus();
 
-      debug('emit "hold"');
+      logger.debug('emit "hold"');
       this.emit('hold', {
         originator: originator
       });
@@ -20554,11 +20149,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_onunhold",
     value: function _onunhold(originator) {
-      debug('session onunhold');
+      logger.debug('session onunhold');
 
       this._setLocalMediaStatus();
 
-      debug('emit "unhold"');
+      logger.debug('emit "unhold"');
       this.emit('unhold', {
         originator: originator
       });
@@ -20568,11 +20163,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function _onmute(_ref5) {
       var audio = _ref5.audio,
           video = _ref5.video;
-      debug('session onmute');
+      logger.debug('session onmute');
 
       this._setLocalMediaStatus();
 
-      debug('emit "muted"');
+      logger.debug('emit "muted"');
       this.emit('muted', {
         audio: audio,
         video: video
@@ -20583,30 +20178,85 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function _onunmute(_ref6) {
       var audio = _ref6.audio,
           video = _ref6.video;
-      debug('session onunmute');
+      logger.debug('session onunmute');
 
       this._setLocalMediaStatus();
 
-      debug('emit "unmuted"');
+      logger.debug('emit "unmuted"');
       this.emit('unmuted', {
         audio: audio,
         video: video
       });
     }
-  }], [{
+  }, {
     key: "C",
-    get:
-    /**
-     * Expose C object.
-     */
-    function get() {
+    get: function get() {
       return C;
+    } // Expose session failed/ended causes as a property of the RTCSession instance.
+
+  }, {
+    key: "causes",
+    get: function get() {
+      return JsSIP_C.causes;
+    }
+  }, {
+    key: "id",
+    get: function get() {
+      return this._id;
+    }
+  }, {
+    key: "connection",
+    get: function get() {
+      return this._connection;
+    }
+  }, {
+    key: "contact",
+    get: function get() {
+      return this._contact;
+    }
+  }, {
+    key: "direction",
+    get: function get() {
+      return this._direction;
+    }
+  }, {
+    key: "local_identity",
+    get: function get() {
+      return this._local_identity;
+    }
+  }, {
+    key: "remote_identity",
+    get: function get() {
+      return this._remote_identity;
+    }
+  }, {
+    key: "start_time",
+    get: function get() {
+      return this._start_time;
+    }
+  }, {
+    key: "end_time",
+    get: function get() {
+      return this._end_time;
+    }
+  }, {
+    key: "data",
+    get: function get() {
+      return this._data;
+    },
+    set: function set(_data) {
+      this._data = _data;
+    }
+  }, {
+    key: "status",
+    get: function get() {
+      return this._status;
     }
   }]);
 
   return RTCSession;
 }(EventEmitter);
-},{"./Constants":2,"./Dialog":3,"./Exceptions":6,"./RTCSession/DTMF":14,"./RTCSession/Info":15,"./RTCSession/ReferNotifier":16,"./RTCSession/ReferSubscriber":17,"./RequestSender":19,"./SIPMessage":20,"./Timers":23,"./Transactions":24,"./URI":27,"./Utils":28,"debug":32,"events":31,"sdp-transform":37}],14:[function(require,module,exports){
+},{"./Constants":2,"./Dialog":3,"./Exceptions":6,"./Logger":9,"./RTCSession/DTMF":14,"./RTCSession/Info":15,"./RTCSession/ReferNotifier":16,"./RTCSession/ReferSubscriber":17,"./RequestSender":19,"./SIPMessage":20,"./Timers":22,"./Transactions":23,"./URI":26,"./Utils":27,"events":30,"sdp-transform":36}],14:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -20627,11 +20277,13 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 var EventEmitter = require('events').EventEmitter;
+
+var Logger = require('../Logger');
 
 var JsSIP_C = require('../Constants');
 
@@ -20639,11 +20291,7 @@ var Exceptions = require('../Exceptions');
 
 var Utils = require('../Utils');
 
-var debug = require('debug')('JsSIP:RTCSession:DTMF');
-
-var debugerror = require('debug')('JsSIP:ERROR:RTCSession:DTMF');
-
-debugerror.log = console.warn.bind(console);
+var logger = new Logger('RTCSession:DTMF');
 var C = {
   MIN_DURATION: 70,
   MAX_DURATION: 6000,
@@ -20672,16 +20320,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }
 
   _createClass(DTMF, [{
-    key: "tone",
-    get: function get() {
-      return this._tone;
-    }
-  }, {
-    key: "duration",
-    get: function get() {
-      return this._duration;
-    }
-  }, {
     key: "send",
     value: function send(tone) {
       var _this2 = this;
@@ -20790,7 +20428,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       }
 
       if (!this._tone) {
-        debug('invalid INFO DTMF received, discarded');
+        logger.debug('invalid INFO DTMF received, discarded');
       } else {
         this._session.newDTMF({
           originator: 'remote',
@@ -20798,6 +20436,16 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           request: request
         });
       }
+    }
+  }, {
+    key: "tone",
+    get: function get() {
+      return this._tone;
+    }
+  }, {
+    key: "duration",
+    get: function get() {
+      return this._duration;
     }
   }]);
 
@@ -20809,7 +20457,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
 
 module.exports.C = C;
-},{"../Constants":2,"../Exceptions":6,"../Utils":28,"debug":32,"events":31}],15:[function(require,module,exports){
+},{"../Constants":2,"../Exceptions":6,"../Logger":9,"../Utils":27,"events":30}],15:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -20830,15 +20478,11 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 var EventEmitter = require('events').EventEmitter;
-
-var debugerror = require('debug')('JsSIP:ERROR:RTCSession:Info');
-
-debugerror.log = console.warn.bind(console);
 
 var JsSIP_C = require('../Constants');
 
@@ -20865,16 +20509,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }
 
   _createClass(Info, [{
-    key: "contentType",
-    get: function get() {
-      return this._contentType;
-    }
-  }, {
-    key: "body",
-    get: function get() {
-      return this._body;
-    }
-  }, {
     key: "send",
     value: function send(contentType, body) {
       var _this2 = this;
@@ -20945,11 +20579,21 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         request: request
       });
     }
+  }, {
+    key: "contentType",
+    get: function get() {
+      return this._contentType;
+    }
+  }, {
+    key: "body",
+    get: function get() {
+      return this._body;
+    }
   }]);
 
   return Info;
 }(EventEmitter);
-},{"../Constants":2,"../Exceptions":6,"../Utils":28,"debug":32,"events":31}],16:[function(require,module,exports){
+},{"../Constants":2,"../Exceptions":6,"../Utils":27,"events":30}],16:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -20958,10 +20602,11 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+var Logger = require('../Logger');
+
 var JsSIP_C = require('../Constants');
 
-var debug = require('debug')('JsSIP:RTCSession:ReferNotifier');
-
+var logger = new Logger('RTCSession:ReferNotifier');
 var C = {
   event_type: 'refer',
   body_type: 'message/sipfrag;version=2.0',
@@ -20983,7 +20628,7 @@ module.exports = /*#__PURE__*/function () {
   _createClass(ReferNotifier, [{
     key: "notify",
     value: function notify(code, reason) {
-      debug('notify()');
+      logger.debug('notify()');
 
       if (this._active === false) {
         return;
@@ -21014,7 +20659,7 @@ module.exports = /*#__PURE__*/function () {
 
   return ReferNotifier;
 }();
-},{"../Constants":2,"debug":32}],17:[function(require,module,exports){
+},{"../Constants":2,"../Logger":9}],17:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -21035,11 +20680,13 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 var EventEmitter = require('events').EventEmitter;
+
+var Logger = require('../Logger');
 
 var JsSIP_C = require('../Constants');
 
@@ -21047,7 +20694,7 @@ var Grammar = require('../Grammar');
 
 var Utils = require('../Utils');
 
-var debug = require('debug')('JsSIP:RTCSession:ReferSubscriber');
+var logger = new Logger('RTCSession:ReferSubscriber');
 
 module.exports = /*#__PURE__*/function (_EventEmitter) {
   _inherits(ReferSubscriber, _EventEmitter);
@@ -21066,17 +20713,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }
 
   _createClass(ReferSubscriber, [{
-    key: "id",
-    get: function get() {
-      return this._id;
-    }
-  }, {
     key: "sendRefer",
     value: function sendRefer(target) {
       var _this2 = this;
 
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      debug('sendRefer()');
+      logger.debug('sendRefer()');
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
       var eventHandlers = Utils.cloneObject(options.eventHandlers); // Set event handlers.
 
@@ -21098,10 +20740,15 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
 
       var referTo = "Refer-To: <".concat(target).concat(replaces ? "?Replaces=".concat(replaces) : '', ">");
-      extraHeaders.push(referTo); // Referred-By header field.
+      extraHeaders.push(referTo); // Referred-By header field (if not already present).
 
-      var referredBy = "Referred-By: <".concat(this._session._ua._configuration.uri._scheme, ":").concat(this._session._ua._configuration.uri._user, "@").concat(this._session._ua._configuration.uri._host, ">");
-      extraHeaders.push(referredBy);
+      if (!extraHeaders.some(function (header) {
+        return header.toLowerCase().startsWith('referred-by:');
+      })) {
+        var referredBy = "Referred-By: <".concat(this._session._ua._configuration.uri._scheme, ":").concat(this._session._ua._configuration.uri._user, "@").concat(this._session._ua._configuration.uri._host, ">");
+        extraHeaders.push(referredBy);
+      }
+
       extraHeaders.push("Contact: ".concat(this._session.contact));
 
       var request = this._session.sendRequest(JsSIP_C.REFER, {
@@ -21130,7 +20777,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "receiveNotify",
     value: function receiveNotify(request) {
-      debug('receiveNotify()');
+      logger.debug('receiveNotify()');
 
       if (!request.body) {
         return;
@@ -21139,7 +20786,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var status_line = Grammar.parse(request.body.trim(), 'Status_Line');
 
       if (status_line === -1) {
-        debug("receiveNotify() | error parsing NOTIFY body: \"".concat(request.body, "\""));
+        logger.debug("receiveNotify() | error parsing NOTIFY body: \"".concat(request.body, "\""));
         return;
       }
 
@@ -21176,8 +20823,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_requestSucceeded",
     value: function _requestSucceeded(response) {
-      debug('REFER succeeded');
-      debug('emit "requestSucceeded"');
+      logger.debug('REFER succeeded');
+      logger.debug('emit "requestSucceeded"');
       this.emit('requestSucceeded', {
         response: response
       });
@@ -21185,18 +20832,23 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_requestFailed",
     value: function _requestFailed(response, cause) {
-      debug('REFER failed');
-      debug('emit "requestFailed"');
+      logger.debug('REFER failed');
+      logger.debug('emit "requestFailed"');
       this.emit('requestFailed', {
         response: response || null,
         cause: cause
       });
     }
+  }, {
+    key: "id",
+    get: function get() {
+      return this._id;
+    }
   }]);
 
   return ReferSubscriber;
 }(EventEmitter);
-},{"../Constants":2,"../Grammar":7,"../Utils":28,"debug":32,"events":31}],18:[function(require,module,exports){
+},{"../Constants":2,"../Grammar":7,"../Logger":9,"../Utils":27,"events":30}],18:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21204,6 +20856,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var Logger = require('./Logger');
 
 var Utils = require('./Utils');
 
@@ -21213,8 +20867,7 @@ var SIPMessage = require('./SIPMessage');
 
 var RequestSender = require('./RequestSender');
 
-var debug = require('debug')('JsSIP:Registrator');
-
+var logger = new Logger('Registrator');
 var MIN_REGISTER_EXPIRES = 10; // In seconds.
 
 module.exports = /*#__PURE__*/function () {
@@ -21251,11 +20904,6 @@ module.exports = /*#__PURE__*/function () {
   }
 
   _createClass(Registrator, [{
-    key: "registered",
-    get: function get() {
-      return this._registered;
-    }
-  }, {
     key: "setExtraHeaders",
     value: function setExtraHeaders(extraHeaders) {
       if (!Array.isArray(extraHeaders)) {
@@ -21291,7 +20939,7 @@ module.exports = /*#__PURE__*/function () {
       var _this = this;
 
       if (this._registering) {
-        debug('Register request in progress...');
+        logger.debug('Register request in progress...');
         return;
       }
 
@@ -21339,7 +20987,7 @@ module.exports = /*#__PURE__*/function () {
                 _this._registering = false;
 
                 if (!response.hasHeader('Contact')) {
-                  debug('no Contact header in response to REGISTER, response ignored');
+                  logger.debug('no Contact header in response to REGISTER, response ignored');
                   break;
                 }
 
@@ -21359,7 +21007,7 @@ module.exports = /*#__PURE__*/function () {
                 }
 
                 if (!contact) {
-                  debug('no Contact header pointing to us, response ignored');
+                  logger.debug('no Contact header pointing to us, response ignored');
                   break;
                 }
 
@@ -21419,7 +21067,7 @@ module.exports = /*#__PURE__*/function () {
                   _this.register();
                 } else {
                   // This response MUST contain a Min-Expires header field.
-                  debug('423 response received for REGISTER without Min-Expires');
+                  logger.debug('423 response received for REGISTER without Min-Expires');
 
                   _this._registrationFailure(response, JsSIP_C.causes.SIP_FAILURE_CODE);
                 }
@@ -21447,7 +21095,7 @@ module.exports = /*#__PURE__*/function () {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
       if (!this._registered) {
-        debug('already unregistered');
+        logger.debug('already unregistered');
         return;
       }
 
@@ -21558,11 +21206,16 @@ module.exports = /*#__PURE__*/function () {
         cause: cause || null
       });
     }
+  }, {
+    key: "registered",
+    get: function get() {
+      return this._registered;
+    }
   }]);
 
   return Registrator;
 }();
-},{"./Constants":2,"./RequestSender":19,"./SIPMessage":20,"./Utils":28,"debug":32}],19:[function(require,module,exports){
+},{"./Constants":2,"./Logger":9,"./RequestSender":19,"./SIPMessage":20,"./Utils":27}],19:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21571,14 +21224,15 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+var Logger = require('./Logger');
+
 var JsSIP_C = require('./Constants');
 
 var DigestAuthentication = require('./DigestAuthentication');
 
 var Transactions = require('./Transactions');
 
-var debug = require('debug')('JsSIP:RequestSender'); // Default event handlers.
-
+var logger = new Logger('RequestSender'); // Default event handlers.
 
 var EventHandlers = {
   onRequestTimeout: function onRequestTimeout() {},
@@ -21682,7 +21336,7 @@ module.exports = /*#__PURE__*/function () {
 
 
         if (!challenge) {
-          debug("".concat(response.status_code, " with wrong or missing challenge, cannot authenticate"));
+          logger.debug("".concat(response.status_code, " with wrong or missing challenge, cannot authenticate"));
 
           this._eventHandlers.onReceiveResponse(response);
 
@@ -21737,7 +21391,7 @@ module.exports = /*#__PURE__*/function () {
 
   return RequestSender;
 }();
-},{"./Constants":2,"./DigestAuthentication":5,"./Transactions":24,"debug":32}],20:[function(require,module,exports){
+},{"./Constants":2,"./DigestAuthentication":5,"./Logger":9,"./Transactions":23}],20:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -21752,11 +21406,11 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -21770,6 +21424,8 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 var sdp_transform = require('sdp-transform');
 
+var Logger = require('./Logger');
+
 var JsSIP_C = require('./Constants');
 
 var Utils = require('./Utils');
@@ -21778,7 +21434,7 @@ var NameAddrHeader = require('./NameAddrHeader');
 
 var Grammar = require('./Grammar');
 
-var debug = require('debug')('JsSIP:SIPMessage');
+var logger = new Logger('SIPMessage');
 /**
  * -param {String} method request method
  * -param {String} ruri request uri
@@ -21789,7 +21445,6 @@ var debug = require('debug')('JsSIP:SIPMessage');
  * -param {Object} [headers] extra headers
  * -param {String} [body]
  */
-
 
 var OutgoingRequest = /*#__PURE__*/function () {
   function OutgoingRequest(method, ruri, ua, params, extraHeaders, body) {
@@ -22269,10 +21924,10 @@ var IncomingMessage = /*#__PURE__*/function () {
       name = Utils.headerize(name);
 
       if (!this.headers[name]) {
-        debug("header \"".concat(name, "\" not present"));
+        logger.debug("header \"".concat(name, "\" not present"));
         return;
       } else if (idx >= this.headers[name].length) {
-        debug("not so many \"".concat(name, "\" headers present"));
+        logger.debug("not so many \"".concat(name, "\" headers present"));
         return;
       }
 
@@ -22289,7 +21944,7 @@ var IncomingMessage = /*#__PURE__*/function () {
       if (parsed === -1) {
         this.headers[name].splice(idx, 1); // delete from headers
 
-        debug("error parsing \"".concat(name, "\" header field with value \"").concat(value, "\""));
+        logger.debug("error parsing \"".concat(name, "\" header field with value \"").concat(value, "\""));
         return;
       } else {
         header.parsed = parsed;
@@ -22592,16 +22247,16 @@ module.exports = {
   IncomingRequest: IncomingRequest,
   IncomingResponse: IncomingResponse
 };
-},{"./Constants":2,"./Grammar":7,"./NameAddrHeader":10,"./Utils":28,"debug":32,"sdp-transform":37}],21:[function(require,module,exports){
+},{"./Constants":2,"./Grammar":7,"./Logger":9,"./NameAddrHeader":11,"./Utils":27,"sdp-transform":36}],21:[function(require,module,exports){
 "use strict";
+
+var Logger = require('./Logger');
 
 var Utils = require('./Utils');
 
 var Grammar = require('./Grammar');
 
-var debugerror = require('debug')('JsSIP:ERROR:Socket');
-
-debugerror.log = console.warn.bind(console);
+var logger = new Logger('Socket');
 /**
  * Interface documentation: https://jssip.net/documentation/$last_version/api/socket/
  *
@@ -22628,25 +22283,25 @@ exports.isSocket = function (socket) {
   }
 
   if (typeof socket === 'undefined') {
-    debugerror('undefined JsSIP.Socket instance');
+    logger.warn('undefined JsSIP.Socket instance');
     return false;
   } // Check Properties.
 
 
   try {
     if (!Utils.isString(socket.url)) {
-      debugerror('missing or invalid JsSIP.Socket url property');
-      throw new Error();
+      logger.warn('missing or invalid JsSIP.Socket url property');
+      throw new Error('Missing or invalid JsSIP.Socket url property');
     }
 
     if (!Utils.isString(socket.via_transport)) {
-      debugerror('missing or invalid JsSIP.Socket via_transport property');
-      throw new Error();
+      logger.warn('missing or invalid JsSIP.Socket via_transport property');
+      throw new Error('Missing or invalid JsSIP.Socket via_transport property');
     }
 
     if (Grammar.parse(socket.sip_uri, 'SIP_URI') === -1) {
-      debugerror('missing or invalid JsSIP.Socket sip_uri property');
-      throw new Error();
+      logger.warn('missing or invalid JsSIP.Socket sip_uri property');
+      throw new Error('missing or invalid JsSIP.Socket sip_uri property');
     }
   } catch (e) {
     return false;
@@ -22656,8 +22311,8 @@ exports.isSocket = function (socket) {
   try {
     ['connect', 'disconnect', 'send'].forEach(function (method) {
       if (!Utils.isFunction(socket[method])) {
-        debugerror("missing or invalid JsSIP.Socket method: ".concat(method));
-        throw new Error();
+        logger.warn("missing or invalid JsSIP.Socket method: ".concat(method));
+        throw new Error("Missing or invalid JsSIP.Socket method: ".concat(method));
       }
     });
   } catch (e) {
@@ -22666,583 +22321,7 @@ exports.isSocket = function (socket) {
 
   return true;
 };
-},{"./Grammar":7,"./Utils":28,"debug":32}],22:[function(require,module,exports){
-"use strict";
-
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-var EventEmitter = require('events').EventEmitter;
-
-var JsSIP_C = require('./Constants');
-
-var Utils = require('./Utils');
-
-var Grammar = require('./Grammar');
-
-var SIPMessage = require('./SIPMessage');
-
-var RequestSender = require('./RequestSender');
-
-var Dialog = require('./Dialog');
-
-var debug = require('debug')('JsSIP:Subscriber');
-
-var debugerror = require('debug')('JsSIP:ERROR:Subscriber');
-
-debugerror.log = console.warn.bind(console);
-/**
- * Termination codes.
- */
-
-var C = {
-  // Termination codes.
-  SUBSCRIBE_RESPONSE_TIMEOUT: 0,
-  SUBSCRIBE_TRANSPORT_ERROR: 1,
-  SUBSCRIBE_NON_OK_RESPONSE: 2,
-  SUBSCRIBE_FAILED_AUTHENTICATION: 3,
-  UNSUBSCRIBE_TIMEOUT: 4,
-  RECEIVE_FINAL_NOTIFY: 5,
-  RECEIVE_BAD_NOTIFY: 6,
-  // Subscriber states.
-  STATE_PENDING: 0,
-  STATE_ACTIVE: 1,
-  STATE_TERMINATED: 2,
-  STATE_INIT: 3,
-  STATE_NOTIFY_WAIT: 4
-};
-/**
- * RFC 6665 Subscriber implementation.
- */
-
-module.exports = /*#__PURE__*/function (_EventEmitter) {
-  _inherits(Subscriber, _EventEmitter);
-
-  var _super = _createSuper(Subscriber);
-
-  /**
-   * @param {UA} ua - reference to JsSIP.UA
-   * @param {string} target
-   * @param {string} eventName - Event header value. May end with optional ;id=xxx
-   * @param {string} accept - Accept header value.
-   * 
-   * @param {SubscriberOption} options - optional parameters.
-   *   @param {number} expires - Expires header value. Default is 900.
-   *   @param {string} contentType - Content-Type header value. Used for SUBSCRIBE with body
-   *   @param {string} allowEvents - Allow-Events header value.
-   *   @param {RequestParams} params - Will have priority over ua.configuration. 
-   *      If set please define: to_uri, to_display_name, from_uri, from_display_name
-   *   @param {Array<string>} extraHeaders - Additional SIP headers.
-   */
-  function Subscriber(ua, target, eventName, accept, _ref) {
-    var _this;
-
-    var expires = _ref.expires,
-        contentType = _ref.contentType,
-        allowEvents = _ref.allowEvents,
-        params = _ref.params,
-        extraHeaders = _ref.extraHeaders;
-
-    _classCallCheck(this, Subscriber);
-
-    debug('new');
-    _this = _super.call(this); // Check that arguments are defined
-
-    if (!target) {
-      throw new TypeError('target is undefined');
-    }
-
-    if (!eventName) {
-      throw new TypeError('eventName is undefined');
-    }
-
-    if (!accept) {
-      throw new TypeError('accept is undefined');
-    }
-
-    _this._ua = ua;
-    _this._target = target;
-    _this._accept = accept;
-
-    if (expires !== 0 && !expires) {
-      expires = 900;
-    }
-
-    _this._expires = expires; // Used to subscribe with body.
-
-    _this._content_type = contentType; // Set initial SUBSCRIBE parameters.
-
-    _this._params = Utils.cloneObject(params);
-
-    if (!_this._params.from_uri) {
-      _this._params.from_uri = _this._ua.configuration.uri;
-    }
-
-    _this._params.from_tag = Utils.newTag();
-    _this._params.to_tag = null;
-    _this._params.call_id = Utils.createRandomToken(20); // Create cseq if not defined custom cseq.
-
-    if (_this._params.cseq === undefined) {
-      _this._params.cseq = Math.floor(Math.random() * 10000 + 1);
-    } // Subscriber state.
-
-
-    _this._state = C.STATE_INIT;
-    _this._dialog = null;
-    _this._request = null; // To refresh subscription.
-
-    _this._expires_timer = null;
-    _this._expires_timestamp = null; // To prevent duplicate un-subscribe sending.
-
-    _this._send_unsubscribe = false; // To prevent duplicate emit terminated event.
-
-    _this._is_terminated = false; // After send un-subscribe wait final NOTIFY limited time.
-
-    _this._unsubscribe_timeout_timer = null; // Custom session empty object for high level use.    
-
-    _this.data = {};
-    var parsed = Grammar.parse(eventName, 'Event');
-
-    if (parsed === -1) {
-      throw new TypeError('eventName - wrong format');
-    }
-
-    _this._event_name = parsed.event;
-    _this._event_id = parsed.params && parsed.params.id;
-    var eventValue = _this._event_name;
-
-    if (_this._event_id) {
-      eventValue += ";id=".concat(_this._event_id);
-    }
-
-    _this._headers = Utils.cloneArray(extraHeaders);
-    _this._headers = _this._headers.concat(["Event: ".concat(eventValue), "Expires: ".concat(_this._expires), "Accept: ".concat(_this._accept)]);
-
-    if (!_this._headers.find(function (header) {
-      return header.startsWith('Contact');
-    })) {
-      var contact = "Contact: <sip:".concat(_this._params.from_uri.user, "@").concat(Utils.createRandomToken(12), ".invalid;transport=ws>");
-      contact += ";+sip.instance=\"<urn:uuid:".concat(_this._ua.configuration.instance_id, ">\"");
-
-      _this._headers.push(contact);
-    }
-
-    if (allowEvents) {
-      _this._headers.push("Allow-Events: ".concat(allowEvents));
-    }
-
-    return _this;
-  }
-
-  _createClass(Subscriber, [{
-    key: "C",
-    get: function get() {
-      return C;
-    }
-  }, {
-    key: "onRequestTimeout",
-    value: function onRequestTimeout() {
-      this._dialogTerminated(C.SUBSCRIBE_RESPONSE_TIMEOUT);
-    }
-  }, {
-    key: "onTransportError",
-    value: function onTransportError() {
-      this._dialogTerminated(C.SUBSCRIBE_TRANSPORT_ERROR);
-    }
-    /**
-     * Dialog callback.
-     */
-
-  }, {
-    key: "receiveRequest",
-    value: function receiveRequest(request) {
-      if (request.method !== JsSIP_C.NOTIFY) {
-        debugerror('received non-NOTIFY request');
-        request.reply(405);
-        return;
-      } // RFC 6665 8.2.1. Check if event header matches.
-
-
-      var event_header = request.parseHeader('Event');
-
-      if (!event_header) {
-        debugerror('missed Event header');
-        request.reply(400);
-
-        this._dialogTerminated(C.RECEIVE_BAD_NOTIFY);
-
-        return;
-      }
-
-      var event_name = event_header.event;
-      var event_id = event_header.params && event_header.params.id;
-
-      if (event_name !== this._event_name || event_id !== this._event_id) {
-        debugerror('Event header does not match SUBSCRIBE');
-        request.reply(489);
-
-        this._dialogTerminated(C.RECEIVE_BAD_NOTIFY);
-
-        return;
-      } // Process Subscription-State header.
-
-
-      var subs_state = request.parseHeader('subscription-state');
-
-      if (!subs_state) {
-        debugerror('missed Subscription-State header');
-        request.reply(400);
-
-        this._dialogTerminated(C.RECEIVE_BAD_NOTIFY);
-
-        return;
-      }
-
-      request.reply(200);
-
-      var new_state = this._stateStringToNumber(subs_state.state);
-
-      var prev_state = this._state;
-
-      if (prev_state !== C.STATE_TERMINATED && new_state !== C.STATE_TERMINATED) {
-        this._state = new_state;
-
-        if (subs_state.expires !== undefined) {
-          var expires = subs_state.expires;
-          var expires_timestamp = new Date().getTime() + expires * 1000;
-          var max_time_deviation = 2000; // Expiration time is shorter and the difference is not too small.
-
-          if (this._expires_timestamp - expires_timestamp > max_time_deviation) {
-            debug('update sending re-SUBSCRIBE time');
-
-            this._scheduleSubscribe(expires);
-          }
-        }
-      }
-
-      if (prev_state !== C.STATE_PENDING && new_state === C.STATE_PENDING) {
-        debug('emit "pending"');
-        this.emit('pending');
-      } else if (prev_state !== C.STATE_ACTIVE && new_state === C.STATE_ACTIVE) {
-        debug('emit "active"');
-        this.emit('active');
-      }
-
-      var body = request.body; // Check if the NOTIFY is final.
-
-      var is_final = new_state === C.STATE_TERMINATED; // Notify event fired for NOTIFY with body.
-
-      if (body) {
-        var content_type = request.getHeader('content-type');
-        debug('emit "notify"');
-        this.emit('notify', is_final, request, body, content_type);
-      }
-
-      if (is_final) {
-        var reason = subs_state.reason;
-        var retry_after = undefined;
-
-        if (subs_state.params && subs_state.params['retry-after'] !== undefined) {
-          retry_after = parseInt(subs_state.params['retry-after']);
-        }
-
-        this._dialogTerminated(C.RECEIVE_FINAL_NOTIFY, reason, retry_after);
-      }
-    }
-    /**
-     * User API
-     */
-
-    /** 
-     * Send the initial (non-fetch)  and subsequent SUBSCRIBE.
-     * @param {string} body - subscribe request body.
-     */
-
-  }, {
-    key: "subscribe",
-    value: function subscribe() {
-      var body = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      debug('subscribe()');
-
-      if (this._state === C.STATE_INIT) {
-        this._state = C.STATE_NOTIFY_WAIT;
-
-        this._sendInitialSubscribe(body, this._headers);
-      } else {
-        this._sendSubsequentSubscribe(body, this._headers);
-      }
-    }
-    /** 
-     * terminate. 
-     * Send un-SUBSCRIBE or fetch-SUBSCRIBE (with Expires: 0).
-     * @param {string} body - Un-subscribe request body
-     */
-
-  }, {
-    key: "terminate",
-    value: function terminate() {
-      var _this2 = this;
-
-      var body = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      debug('terminate()'); // Prevent duplication un-subscribe sending.
-
-      if (this._send_unsubscribe) {
-        debugerror('unsubscribe has already been sent');
-        return;
-      }
-
-      this._send_unsubscribe = true; // Set header Expires: 0.
-
-      var headers = this._headers.map(function (s) {
-        return s.startsWith('Expires') ? 'Expires: 0' : s;
-      });
-
-      if (!this._dialog) {
-        // Fetch-SUBSCRIBE is the first and last one.
-        this._sendInitialSubscribe(body, headers);
-      } else {
-        this._sendSubsequentSubscribe(body, headers);
-      } // Waiting for the final notify for a while.
-
-
-      var final_notify_timeout = 30000;
-      this._unsubscribe_timeout_timer = setTimeout(function () {
-        _this2._dialogTerminated(C.UNSUBSCRIBE_TIMEOUT);
-      }, final_notify_timeout);
-    }
-    /**
-     * Get dialog state.
-     */
-
-  }, {
-    key: "state",
-    get: function get() {
-      return this._state;
-    }
-    /**
-     * Get dialog id.
-     */
-
-  }, {
-    key: "id",
-    get: function get() {
-      return this._dialog ? this._dialog.id : null;
-    }
-    /**
-     * Private API.
-     */
-
-  }, {
-    key: "_sendInitialSubscribe",
-    value: function _sendInitialSubscribe(body, headers) {
-      var _this3 = this;
-
-      if (body) {
-        if (!this._content_type) {
-          throw new TypeError('content_type is undefined');
-        }
-
-        headers = headers.slice();
-        headers.push("Content-Type: ".concat(this._content_type));
-      }
-
-      this._request = new SIPMessage.OutgoingRequest(JsSIP_C.SUBSCRIBE, this._ua.normalizeTarget(this._target), this._ua, this._params, headers, body);
-      var request_sender = new RequestSender(this._ua, this._request, {
-        onRequestTimeout: function onRequestTimeout() {
-          _this3.onRequestTimeout();
-        },
-        onTransportError: function onTransportError() {
-          _this3.onTransportError();
-        },
-        onAuthenticated: function onAuthenticated(request) {
-          _this3._request = request;
-        },
-        onReceiveResponse: function onReceiveResponse(response) {
-          _this3._receiveSubscribeResponse(response);
-        }
-      });
-      request_sender.send();
-    }
-  }, {
-    key: "_receiveSubscribeResponse",
-    value: function _receiveSubscribeResponse(response) {
-      if (response.status_code >= 200 && response.status_code < 300) {
-        // Create dialog
-        if (this._dialog === null) {
-          var dialog = new Dialog(this, response, 'UAC');
-
-          if (dialog.error) {
-            // OK response without Contact 
-            debug(dialog.error);
-
-            this._dialogTerminated(C.SUBSCRIBE_NON_OK_RESPONSE);
-
-            return;
-          }
-
-          this._dialog = dialog; // After the event dialog created.
-
-          debug('emit "initialSubscribeOK"');
-          this.emit('initialSubscribeOK');
-        } // Check expires value.
-
-
-        var expires_value = response.getHeader('expires');
-
-        if (expires_value !== 0 && !expires_value) {
-          debugerror('response without Expires header'); // RFC 6665 3.1.1 SUBSCRIBE OK must contain Expires header.
-          // Use workaround expires value.
-
-          expires_value = '900';
-        }
-
-        var expires = parseInt(expires_value);
-
-        if (expires > 0) {
-          this._scheduleSubscribe(expires);
-        }
-      } else if (response.status_code === 401 || response.status_code === 407) {
-        this._dialogTerminated(C.SUBSCRIBE_FAILED_AUTHENTICATION);
-      } else if (response.status_code >= 300) {
-        this._dialogTerminated(C.SUBSCRIBE_NON_OK_RESPONSE);
-      }
-    }
-  }, {
-    key: "_sendSubsequentSubscribe",
-    value: function _sendSubsequentSubscribe(body, headers) {
-      var _this4 = this;
-
-      if (!this._dialog) {
-        debugerror('sending subsequent subscribe before OK response to initial subscribe');
-        throw new Error('not received final response to initial SUBSCRIBE');
-      }
-
-      if (body) {
-        if (!this._content_type) {
-          throw new TypeError('content_type is undefined');
-        }
-
-        headers = headers.slice();
-        headers.push("Content-Type: ".concat(this._content_type));
-      }
-
-      this._dialog.sendRequest(JsSIP_C.SUBSCRIBE, {
-        body: body,
-        extraHeaders: headers,
-        eventHandlers: {
-          onRequestTimeout: function onRequestTimeout() {
-            _this4.onRequestTimeout();
-          },
-          onTransportError: function onTransportError() {
-            _this4.onTransportError();
-          },
-          onSuccessResponse: function onSuccessResponse(response) {
-            _this4._receiveSubscribeResponse(response);
-          },
-          onErrorResponse: function onErrorResponse(response) {
-            _this4._receiveSubscribeResponse(response);
-          },
-          onDialogError: function onDialogError(response) {
-            _this4._receiveSubscribeResponse(response);
-          }
-        }
-      });
-    }
-  }, {
-    key: "_dialogTerminated",
-    value: function _dialogTerminated(terminationCode) {
-      var reason = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
-      var retryAfter = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
-
-      // To prevent duplicate emit terminated event.
-      if (this._is_terminated) {
-        return;
-      }
-
-      this._is_terminated = true;
-      this._state = C.STATE_TERMINATED; // Clear timers.
-
-      clearTimeout(this._expires_timer);
-      clearTimeout(this._unsubscribe_timeout_timer);
-
-      if (this._dialog) {
-        this._dialog.terminate();
-      }
-
-      debug("emit \"terminated\" code=".concat(terminationCode));
-      this.emit('terminated', terminationCode, reason, retryAfter);
-    }
-  }, {
-    key: "_scheduleSubscribe",
-    value: function _scheduleSubscribe(expires) {
-      var _this5 = this;
-
-      var timeout = expires >= 140 ? expires * 1000 / 2 + Math.floor((expires / 2 - 70) * 1000 * Math.random()) : expires * 1000 - 5000;
-      this._expires_timestamp = new Date().getTime() + expires * 1000;
-      debug("next SUBSCRIBE will be sent in ".concat(Math.floor(timeout / 1000), " sec"));
-      clearTimeout(this._expires_timer);
-      this._expires_timer = setTimeout(function () {
-        _this5._expires_timer = null;
-
-        _this5._sendSubsequentSubscribe(null, _this5._headers);
-      }, timeout);
-    }
-  }, {
-    key: "_stateStringToNumber",
-    value: function _stateStringToNumber(strState) {
-      switch (strState) {
-        case 'pending':
-          return C.STATE_PENDING;
-
-        case 'active':
-          return C.STATE_ACTIVE;
-
-        case 'terminated':
-          return C.STATE_TERMINATED;
-
-        case 'init':
-          return C.STATE_INIT;
-
-        case 'notify_wait':
-          return C.STATE_NOTIFY_WAIT;
-
-        default:
-          throw new TypeError('wrong state value');
-      }
-    }
-  }], [{
-    key: "C",
-    get:
-    /**
-     * Expose C object.
-     */
-    function get() {
-      return C;
-    }
-  }]);
-
-  return Subscriber;
-}(EventEmitter);
-},{"./Constants":2,"./Dialog":3,"./Grammar":7,"./RequestSender":19,"./SIPMessage":20,"./Utils":28,"debug":32,"events":31}],23:[function(require,module,exports){
+},{"./Grammar":7,"./Logger":9,"./Utils":27}],22:[function(require,module,exports){
 "use strict";
 
 var T1 = 500,
@@ -23264,7 +22343,7 @@ module.exports = {
   PROVISIONAL_RESPONSE_INTERVAL: 60000 // See RFC 3261 Section 13.3.1.1
 
 };
-},{}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -23285,11 +22364,13 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 var EventEmitter = require('events').EventEmitter;
+
+var Logger = require('./Logger');
 
 var JsSIP_C = require('./Constants');
 
@@ -23297,16 +22378,11 @@ var SIPMessage = require('./SIPMessage');
 
 var Timers = require('./Timers');
 
-var debugnict = require('debug')('JsSIP:NonInviteClientTransaction');
-
-var debugict = require('debug')('JsSIP:InviteClientTransaction');
-
-var debugact = require('debug')('JsSIP:AckClientTransaction');
-
-var debugnist = require('debug')('JsSIP:NonInviteServerTransaction');
-
-var debugist = require('debug')('JsSIP:InviteServerTransaction');
-
+var loggernict = new Logger('NonInviteClientTransaction');
+var loggerict = new Logger('InviteClientTransaction');
+var loggeract = new Logger('AckClientTransaction');
+var loggernist = new Logger('NonInviteServerTransaction');
+var loggerist = new Logger('InviteServerTransaction');
 var C = {
   // Transaction states.
   STATUS_TRYING: 1,
@@ -23351,11 +22427,6 @@ var NonInviteClientTransaction = /*#__PURE__*/function (_EventEmitter) {
   }
 
   _createClass(NonInviteClientTransaction, [{
-    key: "C",
-    get: function get() {
-      return C;
-    }
-  }, {
     key: "stateChanged",
     value: function stateChanged(state) {
       this.state = state;
@@ -23378,7 +22449,7 @@ var NonInviteClientTransaction = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "onTransportError",
     value: function onTransportError() {
-      debugnict("transport error occurred, deleting transaction ".concat(this.id));
+      loggernict.debug("transport error occurred, deleting transaction ".concat(this.id));
       clearTimeout(this.F);
       clearTimeout(this.K);
       this.stateChanged(C.STATUS_TERMINATED);
@@ -23388,7 +22459,7 @@ var NonInviteClientTransaction = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "timer_F",
     value: function timer_F() {
-      debugnict("Timer F expired for transaction ".concat(this.id));
+      loggernict.debug("Timer F expired for transaction ".concat(this.id));
       this.stateChanged(C.STATUS_TERMINATED);
       this.ua.destroyTransaction(this);
       this.eventHandlers.onRequestTimeout();
@@ -23437,6 +22508,11 @@ var NonInviteClientTransaction = /*#__PURE__*/function (_EventEmitter) {
         }
       }
     }
+  }, {
+    key: "C",
+    get: function get() {
+      return C;
+    }
   }]);
 
   return NonInviteClientTransaction;
@@ -23471,11 +22547,6 @@ var InviteClientTransaction = /*#__PURE__*/function (_EventEmitter2) {
   }
 
   _createClass(InviteClientTransaction, [{
-    key: "C",
-    get: function get() {
-      return C;
-    }
-  }, {
     key: "stateChanged",
     value: function stateChanged(state) {
       this.state = state;
@@ -23503,7 +22574,7 @@ var InviteClientTransaction = /*#__PURE__*/function (_EventEmitter2) {
       clearTimeout(this.M);
 
       if (this.state !== C.STATUS_ACCEPTED) {
-        debugict("transport error occurred, deleting transaction ".concat(this.id));
+        loggerict.debug("transport error occurred, deleting transaction ".concat(this.id));
         this.eventHandlers.onTransportError();
       }
 
@@ -23514,7 +22585,7 @@ var InviteClientTransaction = /*#__PURE__*/function (_EventEmitter2) {
   }, {
     key: "timer_M",
     value: function timer_M() {
-      debugict("Timer M expired for transaction ".concat(this.id));
+      loggerict.debug("Timer M expired for transaction ".concat(this.id));
 
       if (this.state === C.STATUS_ACCEPTED) {
         clearTimeout(this.B);
@@ -23526,7 +22597,7 @@ var InviteClientTransaction = /*#__PURE__*/function (_EventEmitter2) {
   }, {
     key: "timer_B",
     value: function timer_B() {
-      debugict("Timer B expired for transaction ".concat(this.id));
+      loggerict.debug("Timer B expired for transaction ".concat(this.id));
 
       if (this.state === C.STATUS_CALLING) {
         this.stateChanged(C.STATUS_TERMINATED);
@@ -23537,7 +22608,7 @@ var InviteClientTransaction = /*#__PURE__*/function (_EventEmitter2) {
   }, {
     key: "timer_D",
     value: function timer_D() {
-      debugict("Timer D expired for transaction ".concat(this.id));
+      loggerict.debug("Timer D expired for transaction ".concat(this.id));
       clearTimeout(this.B);
       this.stateChanged(C.STATUS_TERMINATED);
       this.ua.destroyTransaction(this);
@@ -23631,6 +22702,11 @@ var InviteClientTransaction = /*#__PURE__*/function (_EventEmitter2) {
         }
       }
     }
+  }, {
+    key: "C",
+    get: function get() {
+      return C;
+    }
   }]);
 
   return InviteClientTransaction;
@@ -23660,11 +22736,6 @@ var AckClientTransaction = /*#__PURE__*/function (_EventEmitter3) {
   }
 
   _createClass(AckClientTransaction, [{
-    key: "C",
-    get: function get() {
-      return C;
-    }
-  }, {
     key: "send",
     value: function send() {
       if (!this.transport.send(this.request)) {
@@ -23674,8 +22745,13 @@ var AckClientTransaction = /*#__PURE__*/function (_EventEmitter3) {
   }, {
     key: "onTransportError",
     value: function onTransportError() {
-      debugact("transport error occurred for transaction ".concat(this.id));
+      loggeract.debug("transport error occurred for transaction ".concat(this.id));
       this.eventHandlers.onTransportError();
+    }
+  }, {
+    key: "C",
+    get: function get() {
+      return C;
     }
   }]);
 
@@ -23706,11 +22782,6 @@ var NonInviteServerTransaction = /*#__PURE__*/function (_EventEmitter4) {
   }
 
   _createClass(NonInviteServerTransaction, [{
-    key: "C",
-    get: function get() {
-      return C;
-    }
-  }, {
     key: "stateChanged",
     value: function stateChanged(state) {
       this.state = state;
@@ -23719,7 +22790,7 @@ var NonInviteServerTransaction = /*#__PURE__*/function (_EventEmitter4) {
   }, {
     key: "timer_J",
     value: function timer_J() {
-      debugnist("Timer J expired for transaction ".concat(this.id));
+      loggernist.debug("Timer J expired for transaction ".concat(this.id));
       this.stateChanged(C.STATUS_TERMINATED);
       this.ua.destroyTransaction(this);
     }
@@ -23728,7 +22799,7 @@ var NonInviteServerTransaction = /*#__PURE__*/function (_EventEmitter4) {
     value: function onTransportError() {
       if (!this.transportError) {
         this.transportError = true;
-        debugnist("transport error occurred, deleting transaction ".concat(this.id));
+        loggernist.debug("transport error occurred, deleting transaction ".concat(this.id));
         clearTimeout(this.J);
         this.stateChanged(C.STATUS_TERMINATED);
         this.ua.destroyTransaction(this);
@@ -23797,6 +22868,11 @@ var NonInviteServerTransaction = /*#__PURE__*/function (_EventEmitter4) {
         }
       }
     }
+  }, {
+    key: "C",
+    get: function get() {
+      return C;
+    }
   }]);
 
   return NonInviteServerTransaction;
@@ -23828,11 +22904,6 @@ var InviteServerTransaction = /*#__PURE__*/function (_EventEmitter5) {
   }
 
   _createClass(InviteServerTransaction, [{
-    key: "C",
-    get: function get() {
-      return C;
-    }
-  }, {
     key: "stateChanged",
     value: function stateChanged(state) {
       this.state = state;
@@ -23841,10 +22912,10 @@ var InviteServerTransaction = /*#__PURE__*/function (_EventEmitter5) {
   }, {
     key: "timer_H",
     value: function timer_H() {
-      debugist("Timer H expired for transaction ".concat(this.id));
+      loggerist.debug("Timer H expired for transaction ".concat(this.id));
 
       if (this.state === C.STATUS_COMPLETED) {
-        debugist('ACK not received, dialog will be terminated');
+        loggerist.debug('ACK not received, dialog will be terminated');
       }
 
       this.stateChanged(C.STATUS_TERMINATED);
@@ -23860,7 +22931,7 @@ var InviteServerTransaction = /*#__PURE__*/function (_EventEmitter5) {
   }, {
     key: "timer_L",
     value: function timer_L() {
-      debugist("Timer L expired for transaction ".concat(this.id));
+      loggerist.debug("Timer L expired for transaction ".concat(this.id));
 
       if (this.state === C.STATUS_ACCEPTED) {
         this.stateChanged(C.STATUS_TERMINATED);
@@ -23872,7 +22943,7 @@ var InviteServerTransaction = /*#__PURE__*/function (_EventEmitter5) {
     value: function onTransportError() {
       if (!this.transportError) {
         this.transportError = true;
-        debugist("transport error occurred, deleting transaction ".concat(this.id));
+        loggerist.debug("transport error occurred, deleting transaction ".concat(this.id));
 
         if (this.resendProvisionalTimer !== null) {
           clearInterval(this.resendProvisionalTimer);
@@ -23976,6 +23047,11 @@ var InviteServerTransaction = /*#__PURE__*/function (_EventEmitter5) {
             break;
         }
       }
+    }
+  }, {
+    key: "C",
+    get: function get() {
+      return C;
     }
   }]);
 
@@ -24093,7 +23169,7 @@ module.exports = {
   InviteServerTransaction: InviteServerTransaction,
   checkTransaction: checkTransaction
 };
-},{"./Constants":2,"./SIPMessage":20,"./Timers":23,"debug":32,"events":31}],25:[function(require,module,exports){
+},{"./Constants":2,"./Logger":9,"./SIPMessage":20,"./Timers":22,"events":30}],24:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -24102,15 +23178,13 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+var Logger = require('./Logger');
+
 var Socket = require('./Socket');
-
-var debug = require('debug')('JsSIP:Transport');
-
-var debugerror = require('debug')('JsSIP:ERROR:Transport');
 
 var JsSIP_C = require('./Constants');
 
-debugerror.log = console.warn.bind(console);
+var logger = new Logger('Transport');
 /**
  * Constants
  */
@@ -24144,7 +23218,7 @@ module.exports = /*#__PURE__*/function () {
 
     _classCallCheck(this, Transport);
 
-    debug('new()');
+    logger.debug('new()');
     this.status = C.STATUS_DISCONNECTED; // Current socket.
 
     this.socket = null; // Socket collection.
@@ -24159,7 +23233,7 @@ module.exports = /*#__PURE__*/function () {
     try {
       this.textDecoder = new TextDecoder('utf8');
     } catch (error) {
-      debugerror("cannot use TextDecoder: ".concat(error));
+      logger.warn("cannot use TextDecoder: ".concat(error));
     }
 
     if (typeof sockets === 'undefined') {
@@ -24194,30 +23268,15 @@ module.exports = /*#__PURE__*/function () {
 
 
   _createClass(Transport, [{
-    key: "via_transport",
-    get: function get() {
-      return this.socket.via_transport;
-    }
-  }, {
-    key: "url",
-    get: function get() {
-      return this.socket.url;
-    }
-  }, {
-    key: "sip_uri",
-    get: function get() {
-      return this.socket.sip_uri;
-    }
-  }, {
     key: "connect",
     value: function connect() {
-      debug('connect()');
+      logger.debug('connect()');
 
       if (this.isConnected()) {
-        debug('Transport is already connected');
+        logger.debug('Transport is already connected');
         return;
       } else if (this.isConnecting()) {
-        debug('Transport is connecting');
+        logger.debug('Transport is connecting');
         return;
       }
 
@@ -24241,7 +23300,7 @@ module.exports = /*#__PURE__*/function () {
   }, {
     key: "disconnect",
     value: function disconnect() {
-      debug('close()');
+      logger.debug('close()');
       this.close_requested = true;
       this.recover_attempts = 0;
       this.status = C.STATUS_DISCONNECTED; // Clear recovery_timer.
@@ -24267,15 +23326,15 @@ module.exports = /*#__PURE__*/function () {
   }, {
     key: "send",
     value: function send(data) {
-      debug('send()');
+      logger.debug('send()');
 
       if (!this.isConnected()) {
-        debugerror('unable to send message, transport is not connected');
+        logger.warn('unable to send message, transport is not connected');
         return false;
       }
 
       var message = data.toString();
-      debug("sending message:\n\n".concat(message, "\n"));
+      logger.debug("sending message:\n\n".concat(message, "\n"));
       return this.socket.send(message);
     }
   }, {
@@ -24306,7 +23365,7 @@ module.exports = /*#__PURE__*/function () {
         k = this.recovery_options.max_interval;
       }
 
-      debug("reconnection attempt: ".concat(this.recover_attempts, ". next connection attempt in ").concat(k, " seconds"));
+      logger.debug("reconnection attempt: ".concat(this.recover_attempts, ". next connection attempt in ").concat(k, " seconds"));
       this.recovery_timer = setTimeout(function () {
         if (!_this.close_requested && !(_this.isConnected() || _this.isConnecting())) {
           // Get the next available socket with higher weight.
@@ -24399,21 +23458,21 @@ module.exports = /*#__PURE__*/function () {
     value: function _onData(data) {
       // CRLF Keep Alive response from server. Ignore it.
       if (data === '\r\n') {
-        debug('received message with CRLF Keep Alive response');
+        logger.debug('received message with CRLF Keep Alive response');
         return;
       } // Binary message.
       else if (typeof data !== 'string') {
           try {
             if (this.textDecoder) data = this.textDecoder.decode(data);else data = String.fromCharCode.apply(null, new Uint8Array(data));
           } catch (evt) {
-            debug('received binary message failed to be converted into string,' + ' message discarded');
+            logger.debug('received binary message failed to be converted into string,' + ' message discarded');
             return;
           }
 
-          debug("received binary message:\n\n".concat(data, "\n"));
+          logger.debug("received binary message:\n\n".concat(data, "\n"));
         } // Text message.
         else {
-            debug("received text message:\n\n".concat(data, "\n"));
+            logger.debug("received text message:\n\n".concat(data, "\n"));
           }
 
       this.ondata({
@@ -24421,11 +23480,26 @@ module.exports = /*#__PURE__*/function () {
         message: data
       });
     }
+  }, {
+    key: "via_transport",
+    get: function get() {
+      return this.socket.via_transport;
+    }
+  }, {
+    key: "url",
+    get: function get() {
+      return this.socket.url;
+    }
+  }, {
+    key: "sip_uri",
+    get: function get() {
+      return this.socket.sip_uri;
+    }
   }]);
 
   return Transport;
 }();
-},{"./Constants":2,"./Socket":21,"debug":32}],26:[function(require,module,exports){
+},{"./Constants":2,"./Logger":9,"./Socket":21}],25:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -24446,21 +23520,19 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 var EventEmitter = require('events').EventEmitter;
+
+var Logger = require('./Logger');
 
 var JsSIP_C = require('./Constants');
 
 var Registrator = require('./Registrator');
 
 var RTCSession = require('./RTCSession');
-
-var Subscriber = require('./Subscriber');
-
-var Notifier = require('./Notifier');
 
 var Message = require('./Message');
 
@@ -24482,11 +23554,7 @@ var sanityCheck = require('./sanityCheck');
 
 var config = require('./Config');
 
-var debug = require('debug')('JsSIP:UA');
-
-var debugerror = require('debug')('JsSIP:ERROR:UA');
-
-debugerror.log = console.warn.bind(console);
+var logger = new Logger('UA');
 var C = {
   // UA status codes.
   STATUS_INIT: 0,
@@ -24510,12 +23578,20 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
   var _super = _createSuper(UA);
 
+  _createClass(UA, null, [{
+    key: "C",
+    // Expose C object.
+    get: function get() {
+      return C;
+    }
+  }]);
+
   function UA(configuration) {
     var _this;
 
     _classCallCheck(this, UA);
 
-    debug('new() [configuration:%o]', configuration);
+    logger.debug('new() [configuration:%o]', configuration);
     _this = _super.call(this);
     _this._cache = {
       credentials: {}
@@ -24559,30 +23635,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }
 
   _createClass(UA, [{
-    key: "C",
-    get: function get() {
-      return C;
-    }
-  }, {
-    key: "status",
-    get: function get() {
-      return this._status;
-    }
-  }, {
-    key: "contact",
-    get: function get() {
-      return this._contact;
-    }
-  }, {
-    key: "configuration",
-    get: function get() {
-      return this._configuration;
-    }
-  }, {
-    key: "transport",
-    get: function get() {
-      return this._transport;
-    } // =================
+    key: "start",
+    // =================
     //  High Level API
     // =================
 
@@ -24590,16 +23644,13 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
      * Connect to the server if status = STATUS_INIT.
      * Resume UA after being closed.
      */
-
-  }, {
-    key: "start",
     value: function start() {
-      debug('start()');
+      logger.debug('start()');
 
       if (this._status === C.STATUS_INIT) {
         this._transport.connect();
       } else if (this._status === C.STATUS_USER_CLOSED) {
-        debug('restarting UA'); // Disconnect.
+        logger.debug('restarting UA'); // Disconnect.
 
         if (this._closeTimer !== null) {
           clearTimeout(this._closeTimer);
@@ -24613,9 +23664,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
         this._transport.connect();
       } else if (this._status === C.STATUS_READY) {
-        debug('UA is in READY status, not restarted');
+        logger.debug('UA is in READY status, not restarted');
       } else {
-        debug('ERROR: connection is down, Auto-Recovery system is trying to reconnect');
+        logger.debug('ERROR: connection is down, Auto-Recovery system is trying to reconnect');
       } // Set dynamic configuration.
 
 
@@ -24628,7 +23679,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "register",
     value: function register() {
-      debug('register()');
+      logger.debug('register()');
       this._dynConfiguration.register = true;
 
       this._registrator.register();
@@ -24640,7 +23691,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "unregister",
     value: function unregister(options) {
-      debug('unregister()');
+      logger.debug('unregister()');
       this._dynConfiguration.register = false;
 
       this._registrator.unregister(options);
@@ -24685,7 +23736,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "call",
     value: function call(target, options) {
-      debug('call()');
+      logger.debug('call()');
       var session = new RTCSession(this);
       session.connect(target, options);
       return session;
@@ -24704,30 +23755,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "sendMessage",
     value: function sendMessage(target, body, options) {
-      debug('sendMessage()');
+      logger.debug('sendMessage()');
       var message = new Message(this);
       message.send(target, body, options);
       return message;
-    }
-    /** 
-     * Create subscriber instance
-     */
-
-  }, {
-    key: "subscribe",
-    value: function subscribe(target, eventName, accept, options) {
-      debug('subscribe()');
-      return new Subscriber(this, target, eventName, accept, options);
-    }
-    /**
-     * Create notifier instance
-     */
-
-  }, {
-    key: "notify",
-    value: function notify(subscribe, contentType, options) {
-      debug('notify()');
-      return new Notifier(this, subscribe, contentType, options);
     }
     /**
      * Terminate ongoing sessions.
@@ -24736,7 +23767,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "terminateSessions",
     value: function terminateSessions(options) {
-      debug('terminateSessions()');
+      logger.debug('terminateSessions()');
 
       for (var idx in this._sessions) {
         if (!this._sessions[idx].isEnded()) {
@@ -24754,12 +23785,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function stop() {
       var _this2 = this;
 
-      debug('stop()'); // Remove dynamic settings.
+      logger.debug('stop()'); // Remove dynamic settings.
 
       this._dynConfiguration = {};
 
       if (this._status === C.STATUS_USER_CLOSED) {
-        debug('UA already closed');
+        logger.debug('UA already closed');
         return;
       } // Close registrator.
 
@@ -24771,7 +23802,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       for (var session in this._sessions) {
         if (Object.prototype.hasOwnProperty.call(this._sessions, session)) {
-          debug("closing session ".concat(session));
+          logger.debug("closing session ".concat(session));
 
           try {
             this._sessions[session].terminate();
@@ -24831,7 +23862,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           return this._configuration.authorization_jwt;
 
         default:
-          debugerror('get() | cannot get "%s" parameter in runtime', parameter);
+          logger.warn('get() | cannot get "%s" parameter in runtime', parameter);
           return undefined;
       }
     }
@@ -24883,7 +23914,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           }
 
         default:
-          debugerror('set() | cannot set "%s" parameter in runtime', parameter);
+          logger.warn('set() | cannot set "%s" parameter in runtime', parameter);
           return false;
       }
 
@@ -25012,7 +24043,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var method = request.method; // Check that request URI points to us.
 
       if (request.ruri.user !== this._configuration.uri.user && request.ruri.user !== this._contact.uri.user) {
-        debug('Request-URI does not point to us');
+        logger.debug('Request-URI does not point to us');
 
         if (request.method !== JsSIP_C.ACK) {
           request.reply_sl(404);
@@ -25059,11 +24090,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
         var message = new Message(this);
         message.init_incoming(request);
-      } else if (method === JsSIP_C.SUBSCRIBE) {
-        if (this.listeners('newSubscribe').length === 0) {
-          request.reply(405);
-          return;
-        }
       } else if (method === JsSIP_C.INVITE) {
         // Initial INVITE.
         if (!request.to_tag && this.listeners('newRTCSession').length === 0) {
@@ -25100,7 +24126,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
                 session.init_incoming(request);
               }
             } else {
-              debugerror('INVITE received but WebRTC is not supported');
+              logger.warn('INVITE received but WebRTC is not supported');
               request.reply(488);
             }
 
@@ -25117,7 +24143,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             if (session) {
               session.receiveRequest(request);
             } else {
-              debug('received CANCEL request for a non existent session');
+              logger.debug('received CANCEL request for a non existent session');
             }
 
             break;
@@ -25138,13 +24164,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             request.reply(200);
             break;
 
-          case JsSIP_C.SUBSCRIBE:
-            this.emit('newSubscribe', {
-              event: request.event,
-              request: request
-            });
-            break;
-
           default:
             request.reply(405);
             break;
@@ -25161,7 +24180,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             if (session) {
               session.receiveRequest(request);
             } else {
-              debug('received NOTIFY request for a non existent subscription');
+              logger.debug('received NOTIFY request for a non existent subscription');
               request.reply(481, 'Subscription does not exist');
             }
           }
@@ -25265,7 +24284,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         this._transport.ondisconnect = onTransportDisconnect.bind(this);
         this._transport.ondata = onTransportData.bind(this);
       } catch (e) {
-        debugerror(e);
+        logger.warn(e);
         throw new Exceptions.ConfigurationError('sockets', this._configuration.sockets);
       } // Remove sockets instance from configuration object.
 
@@ -25343,7 +24362,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         }
       }
 
-      debug('configuration parameters after validation:');
+      logger.debug('configuration parameters after validation:');
 
       for (var _parameter in this._configuration) {
         // Only show the user user configurable parameters.
@@ -25351,28 +24370,47 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           switch (_parameter) {
             case 'uri':
             case 'registrar_server':
-              debug("- ".concat(_parameter, ": ").concat(this._configuration[_parameter]));
+              logger.debug("- ".concat(_parameter, ": ").concat(this._configuration[_parameter]));
               break;
 
             case 'password':
             case 'ha1':
             case 'authorization_jwt':
-              debug("- ".concat(_parameter, ": NOT SHOWN"));
+              logger.debug("- ".concat(_parameter, ": NOT SHOWN"));
               break;
 
             default:
-              debug("- ".concat(_parameter, ": ").concat(JSON.stringify(this._configuration[_parameter])));
+              logger.debug("- ".concat(_parameter, ": ").concat(JSON.stringify(this._configuration[_parameter])));
           }
         }
       }
 
       return;
     }
-  }], [{
+  }, {
     key: "C",
-    get: // Expose C object.
-    function get() {
+    get: function get() {
       return C;
+    }
+  }, {
+    key: "status",
+    get: function get() {
+      return this._status;
+    }
+  }, {
+    key: "contact",
+    get: function get() {
+      return this._contact;
+    }
+  }, {
+    key: "configuration",
+    get: function get() {
+      return this._configuration;
+    }
+  }, {
+    key: "transport",
+    get: function get() {
+      return this._transport;
     }
   }]);
 
@@ -25482,10 +24520,10 @@ function onTransportData(data) {
     }
   }
 }
-},{"./Config":1,"./Constants":2,"./Exceptions":6,"./Message":9,"./Notifier":11,"./Parser":12,"./RTCSession":13,"./Registrator":18,"./SIPMessage":20,"./Subscriber":22,"./Transactions":24,"./Transport":25,"./URI":27,"./Utils":28,"./sanityCheck":30,"debug":32,"events":31}],27:[function(require,module,exports){
+},{"./Config":1,"./Constants":2,"./Exceptions":6,"./Logger":9,"./Message":10,"./Parser":12,"./RTCSession":13,"./Registrator":18,"./SIPMessage":20,"./Transactions":23,"./Transport":24,"./URI":26,"./Utils":27,"./sanityCheck":29,"events":30}],26:[function(require,module,exports){
 "use strict";
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -25514,6 +24552,24 @@ var Grammar = require('./Grammar');
 
 
 module.exports = /*#__PURE__*/function () {
+  _createClass(URI, null, [{
+    key: "parse",
+
+    /**
+      * Parse the given string and returns a JsSIP.URI instance or undefined if
+      * it is an invalid URI.
+      */
+    value: function parse(uri) {
+      uri = Grammar.parse(uri, 'SIP_URI');
+
+      if (uri !== -1) {
+        return uri;
+      } else {
+        return undefined;
+      }
+    }
+  }]);
+
   function URI(scheme, user, host, port) {
     var parameters = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
     var headers = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
@@ -25547,38 +24603,6 @@ module.exports = /*#__PURE__*/function () {
   }
 
   _createClass(URI, [{
-    key: "scheme",
-    get: function get() {
-      return this._scheme;
-    },
-    set: function set(value) {
-      this._scheme = value.toLowerCase();
-    }
-  }, {
-    key: "user",
-    get: function get() {
-      return this._user;
-    },
-    set: function set(value) {
-      this._user = value;
-    }
-  }, {
-    key: "host",
-    get: function get() {
-      return this._host;
-    },
-    set: function set(value) {
-      this._host = value.toLowerCase();
-    }
-  }, {
-    key: "port",
-    get: function get() {
-      return this._port;
-    },
-    set: function set(value) {
-      this._port = value === 0 ? value : parseInt(value, 10) || null;
-    }
-  }, {
     key: "setParam",
     value: function setParam(key, value) {
       if (key) {
@@ -25722,32 +24746,48 @@ module.exports = /*#__PURE__*/function () {
 
       return aor;
     }
-  }], [{
-    key: "parse",
-    value:
-    /**
-      * Parse the given string and returns a JsSIP.URI instance or undefined if
-      * it is an invalid URI.
-      */
-    function parse(uri) {
-      uri = Grammar.parse(uri, 'SIP_URI');
-
-      if (uri !== -1) {
-        return uri;
-      } else {
-        return undefined;
-      }
+  }, {
+    key: "scheme",
+    get: function get() {
+      return this._scheme;
+    },
+    set: function set(value) {
+      this._scheme = value.toLowerCase();
+    }
+  }, {
+    key: "user",
+    get: function get() {
+      return this._user;
+    },
+    set: function set(value) {
+      this._user = value;
+    }
+  }, {
+    key: "host",
+    get: function get() {
+      return this._host;
+    },
+    set: function set(value) {
+      this._host = value.toLowerCase();
+    }
+  }, {
+    key: "port",
+    get: function get() {
+      return this._port;
+    },
+    set: function set(value) {
+      this._port = value === 0 ? value : parseInt(value, 10) || null;
     }
   }]);
 
   return URI;
 }();
-},{"./Constants":2,"./Grammar":7,"./Utils":28}],28:[function(require,module,exports){
+},{"./Constants":2,"./Grammar":7,"./Utils":27}],27:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -26275,7 +25315,7 @@ exports.cloneObject = function (obj) {
   var fallback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   return obj && Object.assign({}, obj) || fallback;
 };
-},{"./Constants":2,"./Grammar":7,"./URI":27}],29:[function(require,module,exports){
+},{"./Constants":2,"./Grammar":7,"./URI":26}],28:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -26284,19 +25324,17 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+var Logger = require('./Logger');
+
 var Grammar = require('./Grammar');
 
-var debug = require('debug')('JsSIP:WebSocketInterface');
-
-var debugerror = require('debug')('JsSIP:ERROR:WebSocketInterface');
-
-debugerror.log = console.warn.bind(console);
+var logger = new Logger('WebSocketInterface');
 
 module.exports = /*#__PURE__*/function () {
   function WebSocketInterface(url) {
     _classCallCheck(this, WebSocketInterface);
 
-    debug('new() [url:"%s"]', url);
+    logger.debug('new() [url:"%s"]', url);
     this._url = url;
     this._sip_uri = null;
     this._via_transport = null;
@@ -26304,10 +25342,10 @@ module.exports = /*#__PURE__*/function () {
     var parsed_url = Grammar.parse(url, 'absoluteURI');
 
     if (parsed_url === -1) {
-      debugerror("invalid WebSocket URI: ".concat(url));
+      logger.warn("invalid WebSocket URI: ".concat(url));
       throw new TypeError("Invalid argument: ".concat(url));
     } else if (parsed_url.scheme !== 'wss' && parsed_url.scheme !== 'ws') {
-      debugerror("invalid WebSocket URI scheme: ".concat(parsed_url.scheme));
+      logger.warn("invalid WebSocket URI scheme: ".concat(parsed_url.scheme));
       throw new TypeError("Invalid argument: ".concat(url));
     } else {
       this._sip_uri = "sip:".concat(parsed_url.host).concat(parsed_url.port ? ":".concat(parsed_url.port) : '', ";transport=ws");
@@ -26316,33 +25354,15 @@ module.exports = /*#__PURE__*/function () {
   }
 
   _createClass(WebSocketInterface, [{
-    key: "via_transport",
-    get: function get() {
-      return this._via_transport;
-    },
-    set: function set(value) {
-      this._via_transport = value.toUpperCase();
-    }
-  }, {
-    key: "sip_uri",
-    get: function get() {
-      return this._sip_uri;
-    }
-  }, {
-    key: "url",
-    get: function get() {
-      return this._url;
-    }
-  }, {
     key: "connect",
     value: function connect() {
-      debug('connect()');
+      logger.debug('connect()');
 
       if (this.isConnected()) {
-        debug("WebSocket ".concat(this._url, " is already connected"));
+        logger.debug("WebSocket ".concat(this._url, " is already connected"));
         return;
       } else if (this.isConnecting()) {
-        debug("WebSocket ".concat(this._url, " is connecting"));
+        logger.debug("WebSocket ".concat(this._url, " is connecting"));
         return;
       }
 
@@ -26350,7 +25370,7 @@ module.exports = /*#__PURE__*/function () {
         this.disconnect();
       }
 
-      debug("connecting to WebSocket ".concat(this._url));
+      logger.debug("connecting to WebSocket ".concat(this._url));
 
       try {
         this._ws = new WebSocket(this._url, 'sip');
@@ -26366,7 +25386,7 @@ module.exports = /*#__PURE__*/function () {
   }, {
     key: "disconnect",
     value: function disconnect() {
-      debug('disconnect()');
+      logger.debug('disconnect()');
 
       if (this._ws) {
         // Unbind websocket event callbacks.
@@ -26386,14 +25406,14 @@ module.exports = /*#__PURE__*/function () {
   }, {
     key: "send",
     value: function send(message) {
-      debug('send()');
+      logger.debug('send()');
 
       if (this.isConnected()) {
         this._ws.send(message);
 
         return true;
       } else {
-        debugerror('unable to send message, WebSocket is not open');
+        logger.warn('unable to send message, WebSocket is not open');
         return false;
       }
     }
@@ -26414,7 +25434,7 @@ module.exports = /*#__PURE__*/function () {
   }, {
     key: "_onOpen",
     value: function _onOpen() {
-      debug("WebSocket ".concat(this._url, " connected"));
+      logger.debug("WebSocket ".concat(this._url, " connected"));
       this.onconnect();
     }
   }, {
@@ -26423,10 +25443,10 @@ module.exports = /*#__PURE__*/function () {
       var wasClean = _ref.wasClean,
           code = _ref.code,
           reason = _ref.reason;
-      debug("WebSocket ".concat(this._url, " closed"));
+      logger.debug("WebSocket ".concat(this._url, " closed"));
 
       if (wasClean === false) {
-        debug('WebSocket abrupt disconnection');
+        logger.debug('WebSocket abrupt disconnection');
       }
 
       this.ondisconnect(!wasClean, code, reason);
@@ -26435,26 +25455,46 @@ module.exports = /*#__PURE__*/function () {
     key: "_onMessage",
     value: function _onMessage(_ref2) {
       var data = _ref2.data;
-      debug('received WebSocket message');
+      logger.debug('received WebSocket message');
       this.ondata(data);
     }
   }, {
     key: "_onError",
     value: function _onError(e) {
-      debugerror("WebSocket ".concat(this._url, " error: "), e);
+      logger.warn("WebSocket ".concat(this._url, " error: "), e);
+    }
+  }, {
+    key: "via_transport",
+    get: function get() {
+      return this._via_transport;
+    },
+    set: function set(value) {
+      this._via_transport = value.toUpperCase();
+    }
+  }, {
+    key: "sip_uri",
+    get: function get() {
+      return this._sip_uri;
+    }
+  }, {
+    key: "url",
+    get: function get() {
+      return this._url;
     }
   }]);
 
   return WebSocketInterface;
 }();
-},{"./Grammar":7,"debug":32}],30:[function(require,module,exports){
+},{"./Grammar":7,"./Logger":9}],29:[function(require,module,exports){
 "use strict";
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+var Logger = require('./Logger');
 
 var JsSIP_C = require('./Constants');
 
@@ -26462,8 +25502,7 @@ var SIPMessage = require('./SIPMessage');
 
 var Utils = require('./Utils');
 
-var debug = require('debug')('JsSIP:sanityCheck'); // Checks for requests and responses.
-
+var logger = new Logger('sanityCheck'); // Checks for requests and responses.
 
 var all = [minimumHeaders]; // Checks for requests.
 
@@ -26637,7 +25676,7 @@ function rfc3261_8_2_2_2() {
 
 function rfc3261_8_1_3_3() {
   if (message.getHeaders('via').length > 1) {
-    debug('more than one Via header field present in the response, dropping the response');
+    logger.debug('more than one Via header field present in the response, dropping the response');
     return false;
   }
 }
@@ -26647,7 +25686,7 @@ function rfc3261_18_3_response() {
       contentLength = message.getHeader('content-length');
 
   if (len < contentLength) {
-    debug('message body length is lower than the value in Content-Length header field, dropping the response');
+    logger.debug('message body length is lower than the value in Content-Length header field, dropping the response');
     return false;
   }
 } // Sanity Check functions for requests and responses.
@@ -26660,7 +25699,7 @@ function minimumHeaders() {
     var header = _mandatoryHeaders[_i];
 
     if (!message.hasHeader(header)) {
-      debug("missing mandatory header field : ".concat(header, ", dropping the response"));
+      logger.debug("missing mandatory header field : ".concat(header, ", dropping the response"));
       return false;
     }
   }
@@ -26699,7 +25738,7 @@ function reply(status_code) {
   response += '\r\n';
   transport.send(response);
 }
-},{"./Constants":2,"./SIPMessage":20,"./Utils":28,"debug":32}],31:[function(require,module,exports){
+},{"./Constants":2,"./Logger":9,"./SIPMessage":20,"./Utils":27}],30:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -27224,29 +26263,20 @@ function functionBindPolyfill(context) {
   };
 }
 
-},{}],32:[function(require,module,exports){
-(function (process){(function (){
+},{}],31:[function(require,module,exports){
+(function (process){
 /* eslint-env browser */
 
 /**
  * This is the web browser implementation of `debug()`.
  */
 
+exports.log = log;
 exports.formatArgs = formatArgs;
 exports.save = save;
 exports.load = load;
 exports.useColors = useColors;
 exports.storage = localstorage();
-exports.destroy = (() => {
-	let warned = false;
-
-	return () => {
-		if (!warned) {
-			warned = true;
-			console.warn('Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.');
-		}
-	};
-})();
 
 /**
  * Colors.
@@ -27407,14 +26437,18 @@ function formatArgs(args) {
 }
 
 /**
- * Invokes `console.debug()` when available.
- * No-op when `console.debug` is not a "function".
- * If `console.debug` is not available, falls back
- * to `console.log`.
+ * Invokes `console.log()` when available.
+ * No-op when `console.log` is not a "function".
  *
  * @api public
  */
-exports.log = console.debug || console.log || (() => {});
+function log(...args) {
+	// This hackery is required for IE8/9, where
+	// the `console.log` function doesn't have 'apply'
+	return typeof console === 'object' &&
+		console.log &&
+		console.log(...args);
+}
 
 /**
  * Save `namespaces`.
@@ -27496,8 +26530,8 @@ formatters.j = function (v) {
 	}
 };
 
-}).call(this)}).call(this,require('_process'))
-},{"./common":33,"_process":35}],33:[function(require,module,exports){
+}).call(this,require('_process'))
+},{"./common":32,"_process":34}],32:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -27512,11 +26546,15 @@ function setup(env) {
 	createDebug.enable = enable;
 	createDebug.enabled = enabled;
 	createDebug.humanize = require('ms');
-	createDebug.destroy = destroy;
 
 	Object.keys(env).forEach(key => {
 		createDebug[key] = env[key];
 	});
+
+	/**
+	* Active `debug` instances.
+	*/
+	createDebug.instances = [];
 
 	/**
 	* The currently active debug mode names, and names to skip.
@@ -27559,7 +26597,6 @@ function setup(env) {
 	*/
 	function createDebug(namespace) {
 		let prevTime;
-		let enableOverride = null;
 
 		function debug(...args) {
 			// Disabled?
@@ -27589,7 +26626,7 @@ function setup(env) {
 			args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
 				// If we encounter an escaped % then don't increase the array index
 				if (match === '%%') {
-					return '%';
+					return match;
 				}
 				index++;
 				const formatter = createDebug.formatters[format];
@@ -27612,26 +26649,31 @@ function setup(env) {
 		}
 
 		debug.namespace = namespace;
+		debug.enabled = createDebug.enabled(namespace);
 		debug.useColors = createDebug.useColors();
-		debug.color = createDebug.selectColor(namespace);
+		debug.color = selectColor(namespace);
+		debug.destroy = destroy;
 		debug.extend = extend;
-		debug.destroy = createDebug.destroy; // XXX Temporary. Will be removed in the next major release.
+		// Debug.formatArgs = formatArgs;
+		// debug.rawLog = rawLog;
 
-		Object.defineProperty(debug, 'enabled', {
-			enumerable: true,
-			configurable: false,
-			get: () => enableOverride === null ? createDebug.enabled(namespace) : enableOverride,
-			set: v => {
-				enableOverride = v;
-			}
-		});
-
-		// Env-specific initialization logic for debug instances
+		// env-specific initialization logic for debug instances
 		if (typeof createDebug.init === 'function') {
 			createDebug.init(debug);
 		}
 
+		createDebug.instances.push(debug);
+
 		return debug;
+	}
+
+	function destroy() {
+		const index = createDebug.instances.indexOf(this);
+		if (index !== -1) {
+			createDebug.instances.splice(index, 1);
+			return true;
+		}
+		return false;
 	}
 
 	function extend(namespace, delimiter) {
@@ -27670,6 +26712,11 @@ function setup(env) {
 			} else {
 				createDebug.names.push(new RegExp('^' + namespaces + '$'));
 			}
+		}
+
+		for (i = 0; i < createDebug.instances.length; i++) {
+			const instance = createDebug.instances[i];
+			instance.enabled = createDebug.enabled(instance.namespace);
 		}
 	}
 
@@ -27745,14 +26792,6 @@ function setup(env) {
 		return val;
 	}
 
-	/**
-	* XXX DO NOT USE. This is a temporary stub function.
-	* XXX It WILL be removed in the next major release.
-	*/
-	function destroy() {
-		console.warn('Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.');
-	}
-
 	createDebug.enable(createDebug.load());
 
 	return createDebug;
@@ -27760,7 +26799,7 @@ function setup(env) {
 
 module.exports = setup;
 
-},{"ms":34}],34:[function(require,module,exports){
+},{"ms":33}],33:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -27924,7 +26963,7 @@ function plural(ms, msAbs, n, name) {
   return Math.round(ms / n) + ' ' + name + (isPlural ? 's' : '');
 }
 
-},{}],35:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -28110,7 +27149,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],36:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 var grammar = module.exports = {
   v: [{
     name: 'version',
@@ -28206,7 +27245,7 @@ var grammar = module.exports = {
       push: 'rtcpFbTrrInt',
       reg: /^rtcp-fb:(\*|\d*) trr-int (\d*)/,
       names: ['payload', 'value'],
-      format: 'rtcp-fb:%s trr-int %d'
+      format: 'rtcp-fb:%d trr-int %d'
     },
     {
       // a=rtcp-fb:98 nack rpsi
@@ -28606,7 +27645,7 @@ Object.keys(grammar).forEach(function (key) {
   });
 });
 
-},{}],37:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 var parser = require('./parser');
 var writer = require('./writer');
 
@@ -28619,7 +27658,7 @@ exports.parseRemoteCandidates = parser.parseRemoteCandidates;
 exports.parseImageAttributes = parser.parseImageAttributes;
 exports.parseSimulcastStreamList = parser.parseSimulcastStreamList;
 
-},{"./parser":38,"./writer":39}],38:[function(require,module,exports){
+},{"./parser":37,"./writer":38}],37:[function(require,module,exports){
 var toIntIfInt = function (v) {
   return String(Number(v)) === v ? Number(v) : v;
 };
@@ -28745,7 +27784,7 @@ exports.parseSimulcastStreamList = function (str) {
   });
 };
 
-},{"./grammar":36}],39:[function(require,module,exports){
+},{"./grammar":35}],38:[function(require,module,exports){
 var grammar = require('./grammar');
 
 // customized util.format - discards excess arguments and can void middle ones
@@ -28861,12 +27900,12 @@ module.exports = function (session, opts) {
   return sdp.join('\r\n') + '\r\n';
 };
 
-},{"./grammar":36}],40:[function(require,module,exports){
+},{"./grammar":35}],39:[function(require,module,exports){
 module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.7.6",
+  "version": "3.7.11",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",

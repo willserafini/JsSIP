@@ -23179,7 +23179,13 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           onTransportError: function onTransportError() {
             _this4.onTransportError();
           },
-          onReceiveResponse: function onReceiveResponse(response) {
+          onSuccessResponse: function onSuccessResponse(response) {
+            _this4._receiveSubscribeResponse(response);
+          },
+          onErrorResponse: function onErrorResponse(response) {
+            _this4._receiveSubscribeResponse(response);
+          },
+          onDialogError: function onDialogError(response) {
             _this4._receiveSubscribeResponse(response);
           }
         }

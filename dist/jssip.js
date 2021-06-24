@@ -16618,6 +16618,8 @@ var SIPMessage = require('./SIPMessage');
 
 var RequestSender = require('./RequestSender');
 
+var Dialog = require('./Dialog');
+
 var debug = require('debug')('JsSIP:Notifier');
 
 var debugerror = require('debug')('JsSIP:ERROR:Notifier');
@@ -17018,7 +17020,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
   return Notifier;
 }(EventEmitter);
-},{"./Constants":2,"./RequestSender":19,"./SIPMessage":20,"./Utils":28,"debug":32,"events":31}],12:[function(require,module,exports){
+},{"./Constants":2,"./Dialog":3,"./RequestSender":19,"./SIPMessage":20,"./Utils":28,"debug":32,"events":31}],12:[function(require,module,exports){
 "use strict";
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
@@ -23151,6 +23153,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_sendSubsequentSubscribe",
     value: function _sendSubsequentSubscribe(body, headers) {
+      var _this4 = this;
+
       if (!this._dialog) {
         debugerror('sending subsequent subscribe before OK response to initial subscribe');
         throw new Error('not received final response to initial SUBSCRIBE');
@@ -23167,7 +23171,18 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       this._dialog.sendRequest(JsSIP_C.SUBSCRIBE, {
         body: body,
-        extraHeaders: headers
+        extraHeaders: headers,
+        eventHandlers: {
+          onRequestTimeout: function onRequestTimeout() {
+            _this4.onRequestTimeout();
+          },
+          onTransportError: function onTransportError() {
+            _this4.onTransportError();
+          },
+          onReceiveResponse: function onReceiveResponse(response) {
+            _this4._receiveSubscribeResponse(response);
+          }
+        }
       });
     }
   }, {
@@ -23197,16 +23212,16 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_scheduleSubscribe",
     value: function _scheduleSubscribe(expires) {
-      var _this4 = this;
+      var _this5 = this;
 
       var timeout = expires >= 140 ? expires * 1000 / 2 + Math.floor((expires / 2 - 70) * 1000 * Math.random()) : expires * 1000 - 5000;
       this._expires_timestamp = new Date().getTime() + expires * 1000;
       debug("next SUBSCRIBE will be sent in ".concat(Math.floor(timeout / 1000), " sec"));
       clearTimeout(this._expires_timer);
       this._expires_timer = setTimeout(function () {
-        _this4._expires_timer = null;
+        _this5._expires_timer = null;
 
-        _this4._sendSubsequentSubscribe(null, _this4._headers);
+        _this5._sendSubsequentSubscribe(null, _this5._headers);
       }, timeout);
     }
   }, {

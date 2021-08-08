@@ -1,6 +1,42 @@
 CHANGELOG
 =========
 
+### 3.8.0
+
+
+* Add support for sending and responding to SIP OPTIONS. Credits to @simonlindberg.
+
+
+### 3.7.11
+
+
+* ReferSubscriber: fix, case sensitivity.
+
+
+### 3.7.10
+
+
+* RTCSession: allow overriding the Referred-By header on REFER. Credits to @jp1987.
+
+
+### 3.7.9
+
+
+* RTCSession: allow sending DTMFs if 1XX was received. Credits to @BlindChickens.
+
+
+### 3.7.8
+
+
+* Use a proper Logger class (fix from previous release)
+
+
+### 3.7.7
+
+
+* Use a proper Logger class.
+
+
 ### 3.7.6
 
 

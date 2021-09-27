@@ -47,7 +47,7 @@ module.exports = {
         
         const subsState = notify.parseHeader('subscription-state').state;
         
-        test.ok(subsState === 'active' || subsState === 'terminated', 'notify subscription-state');
+        test.ok(subsState === 'pending' || subsState === 'active' || subsState === 'terminated', 'notify subscription-state');
         
         // After receiving the first notify, send un-subscribe.
         if (eventSequence === 7)
@@ -72,7 +72,7 @@ module.exports = {
 
       subscriber.on('dialogCreated', () => 
       {
-        test.ok(++eventSequence === 5, 'subscriber - dialog created');
+        test.ok(++eventSequence === 5, 'subscriber dialog created');
       });
 
       test.ok(++eventSequence === 2, 'send subscribe');
@@ -153,11 +153,11 @@ module.exports = {
       }
       
       const accepts = subs.getHeaders('accept');
-      const isAcceptOK = accepts && accepts.some((v) => v.includes('text/plain'));
+      const canUse = accepts && accepts.some((v) => v.includes(CONTENT_TYPE));
       
-      test.ok(isAcceptOK, 'notifier understand subscribe accept header');
+      test.ok(canUse, 'notifier can use subscribe accept header');
       
-      if (!isAcceptOK)
+      if (!canUse)
       {
         subs.reply(406); // "Not Acceptable"
         
@@ -169,7 +169,7 @@ module.exports = {
         
     ua.on('connected', () => 
     {
-      test.ok(++eventSequence === 1, 'socket connected event');    
+      test.ok(++eventSequence === 1, 'socket connected');    
       
       createSubscriber(ua);
     });

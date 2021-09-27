@@ -7,63 +7,28 @@ const LoopSocket = require('./include/LoopSocket');
 module.exports = {
   'subscriber/notifier communication' : function(test)
   {
-    test.expect(26);
+    test.expect(39);
     
     let eventSequence = 0;
-    const weatherRequest = 'Please report the weather condition';
-    const weatherReport = '+20..+24°C, no precipitation, light wind';
-    const contentType = 'text/plain'; 
     
-    function createNotifier(ua, subscribe) 
-    {
-      const notifier = ua.notify(subscribe, contentType, { pending: false });
-
-      // Receive subscribe (includes initial)
-      notifier.on('subscribe', (isUnsubscribe, subs, body, contType) => 
-      {
-        test.strictEqual(body, weatherRequest, 'received subscribe body');
-        test.strictEqual(contType, contentType, 'received subscribe content-type');
- 
-        if (isUnsubscribe)
-        {
-          test.ok(++eventSequence === 9, 'receive un-subscribe, send final notify');   
-          
-          notifier.terminate(weatherReport);
-        }
-        else 
-        {
-          test.ok(++eventSequence === 4, 'receive subscribe, send notify'); 
-          
-          notifier.notify(weatherReport);
-        }
-      });
-
-      notifier.on('terminated', (terminationCode, sendFinalNotify) => 
-      {
-        test.ok(++eventSequence === 10, 'notifier terminated');       
-        test.ok(!sendFinalNotify, 'here final notify sending if subscription expired');
-        
-        if (sendFinalNotify) 
-        {
-          notifier.terminate(weatherReport);
-        }
-      });
-
-      notifier.start();
-    }
-
+    const TARGET = 'ikq';
+    const REQUEST_URI = 'sip:ikq@example.com';
+    const CONTACT_URI = 'sip:ikq@abcdefabcdef.invalid;transport=ws';
+    const SUBSCRIBE_ACCEPT = 'application/text, text/plain';
+    const EVENT_NAME = 'weather';
+    const CONTENT_TYPE = 'text/plain'; 
+    const WEATHER_REQUEST = 'Please report the weather condition';
+    const WEATHER_REPORT = '+20..+24°C, no precipitation, light wind';
+    
     function createSubscriber(ua)
     {
-      const target = 'ikq';
-      const eventName = 'weather';
-      const accept = 'application/text, text/plain';
       const options = {
         expires     : 3600,
-        contentType : 'text/plain',
+        contentType : CONTENT_TYPE,
         params      : null
       };
 
-      const subscriber = ua.subscribe(target, eventName, accept, options);
+      const subscriber = ua.subscribe(TARGET, EVENT_NAME, SUBSCRIBE_ACCEPT, options);
 
       subscriber.on('active', () => 
       {
@@ -74,15 +39,22 @@ module.exports = {
       {
         eventSequence++;
         test.ok(eventSequence === 7 || eventSequence === 11, 'receive notify');
-        test.strictEqual(body, weatherReport, 'received notify body');
-        test.strictEqual(contType, contentType, 'received notify content-type');
+        
+        test.strictEqual(notify.method, 'NOTIFY');
+        test.strictEqual(notify.getHeader('contact'), `<${CONTACT_URI}>`, 'notify contact');
+        test.strictEqual(body, WEATHER_REPORT, 'notify body');
+        test.strictEqual(contType, CONTENT_TYPE, 'notify content-type');
+        
+        const subsState = notify.parseHeader('subscription-state').state;
+        
+        test.ok(subsState === 'active' || subsState === 'terminated', 'notify subscription-state');
         
         // After receiving the first notify, send un-subscribe.
         if (eventSequence === 7)
         { 
           test.ok(++eventSequence === 8, 'send un-subscribe');
           
-          subscriber.terminate(weatherRequest);
+          subscriber.terminate(WEATHER_REQUEST);
         }
       });
 
@@ -105,14 +77,56 @@ module.exports = {
 
       test.ok(++eventSequence === 2, 'send subscribe');
       
-      subscriber.subscribe(weatherRequest);
+      subscriber.subscribe(WEATHER_REQUEST);
     }
 
+    function createNotifier(ua, subscribe) 
+    {
+      const notifier = ua.notify(subscribe, CONTENT_TYPE, { pending: false });
+
+      // Receive subscribe (includes initial)
+      notifier.on('subscribe', (isUnsubscribe, subs, body, contType) => 
+      {
+        test.strictEqual(subscribe.method, 'SUBSCRIBE');
+        test.strictEqual(subscribe.getHeader('contact'), `<${CONTACT_URI}>`, 'subscribe contact');
+        test.strictEqual(subscribe.getHeader('accept'), SUBSCRIBE_ACCEPT, 'subscribe accept');
+        test.strictEqual(body, WEATHER_REQUEST, 'subscribe body');
+        test.strictEqual(contType, CONTENT_TYPE, 'subscribe content-type');
+ 
+        if (isUnsubscribe)
+        {
+          test.ok(++eventSequence === 9, 'receive un-subscribe, send final notify');   
+          
+          notifier.terminate(WEATHER_REPORT);
+        }
+        else 
+        {
+          test.ok(++eventSequence === 4, 'receive subscribe, send notify'); 
+          
+          notifier.notify(WEATHER_REPORT);
+        }
+      });
+
+      notifier.on('terminated', (terminationCode, sendFinalNotify) => 
+      {
+        test.ok(++eventSequence === 10, 'notifier terminated');       
+        test.ok(!sendFinalNotify, 'final notify sending if subscription expired');
+        
+        if (sendFinalNotify) 
+        {
+          notifier.terminate(WEATHER_REPORT);
+        }
+      });
+
+      notifier.start();
+    }
+
+    // Start JsSIP UA with loop socket.
     const config = 
     {
       sockets     : new LoopSocket(), // message sending itself, with modified Call-ID
-      uri         : 'sip:ikq@example.com',
-      contact_uri : 'sip:ikq@abcdefabcdef.invalid;transport=ws',
+      uri         : REQUEST_URI,
+      contact_uri : CONTACT_URI,
       register    : false
     };
 
@@ -128,9 +142,10 @@ module.exports = {
       const subs = e.request;
       const ev = subs.parseHeader('event');
       
-      test.strictEqual(ev.event, 'weather');
+      test.strictEqual(subs.ruri.toString(), REQUEST_URI, 'initial subscribe uri');
+      test.strictEqual(ev.event, EVENT_NAME, 'subscribe event');
       
-      if (ev.event !== 'weather')
+      if (ev.event !== EVENT_NAME)
       {
         subs.reply(489); // "Bad Event"
         

@@ -70,9 +70,9 @@ module.exports = {
         test.done();    
       });
 
-      subscriber.on('dialogCreated', () => 
+      subscriber.on('accepted', () => 
       {
-        test.ok(++eventSequence === 5, 'subscriber dialog created');
+        test.ok(++eventSequence === 5, 'initial subscribe accepted');
       });
 
       test.ok(++eventSequence === 2, 'send subscribe');

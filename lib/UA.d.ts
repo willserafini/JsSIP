@@ -204,7 +204,7 @@ export class UA extends EventEmitter {
 
   subscribe(target: string, eventName: string, accept: string, options?: SubscriberOptions): Subscriber;
 
-  notifier( subscribe: IncomingRequest, contentType: string, options?: NotifierOptions): Notifier;
+  notify( subscribe: IncomingRequest, contentType: string, options?: NotifierOptions): Notifier;
 
   terminateSessions(options?: TerminateOptions): void;
 

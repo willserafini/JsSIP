@@ -1,8 +1,7 @@
-/// <reference types="node" />
-import {EventEmitter} from 'events'
+import {EventEmitter, Listener} from 'events'
 
-import {DisconnectEvent, Socket, WeightedSocket} from './WebSocketInterface'
-import {AnswerOptions, AnyListener, Originator, RTCSession, RTCSessionEventMap, TerminateOptions} from './RTCSession'
+import {Socket, WeightedSocket} from './Socket'
+import {AnswerOptions, Originator, RTCSession, RTCSessionEventMap, TerminateOptions} from './RTCSession'
 import {IncomingRequest, IncomingResponse, OutgoingRequest} from './SIPMessage'
 import {Message, SendMessageOptions} from './Message'
 import {Registrator} from './Registrator'
@@ -46,6 +45,7 @@ export interface UAConfiguration {
   registrar_server?: string;
   use_preloaded_route?: boolean;
   user_agent?: string;
+  extra_headers?: string[];
 }
 
 export interface IncomingRTCSessionEvent {
@@ -62,13 +62,20 @@ export interface OutgoingRTCSessionEvent {
 
 export type RTCSessionEvent = IncomingRTCSessionEvent | OutgoingRTCSessionEvent;
 
-export interface UAConnectingEvent {
+export interface ConnectingEvent {
   socket: Socket;
   attempts: number
 }
 
 export interface ConnectedEvent {
   socket: Socket;
+}
+
+export interface DisconnectEvent {
+  socket: Socket;
+  error: boolean;
+  code?: number;
+  reason?: string;
 }
 
 export interface RegisteredEvent {
@@ -92,7 +99,17 @@ export interface OutgoingMessageEvent {
   request: OutgoingRequest;
 }
 
-export type UAConnectingListener = (event: UAConnectingEvent) => void;
+export interface IncomingOptionsEvent {
+  originator: Originator.REMOTE;
+  request: IncomingRequest;
+}
+
+export interface OutgoingOptionsEvent {
+  originator: Originator.LOCAL;
+  request: OutgoingRequest;
+}
+
+export type ConnectingListener = (event: ConnectingEvent) => void;
 export type ConnectedListener = (event: ConnectedEvent) => void;
 export type DisconnectedListener = (event: DisconnectEvent) => void;
 export type RegisteredListener = (event: RegisteredEvent) => void;
@@ -104,21 +121,25 @@ export type RTCSessionListener = IncomingRTCSessionListener | OutgoingRTCSession
 export type IncomingMessageListener = (event: IncomingMessageEvent) => void;
 export type OutgoingMessageListener = (event: OutgoingMessageEvent) => void;
 export type MessageListener = IncomingMessageListener | OutgoingMessageListener;
+export type IncomingOptionsListener = (event: IncomingOptionsEvent) => void;
+export type OutgoingOptionsListener = (event: OutgoingOptionsEvent) => void;
+export type OptionsListener = IncomingOptionsListener | OutgoingOptionsListener;
 export type SipEventListener = <T = any>(event: { event: T; request: IncomingRequest; }) => void
 export type SipSubscribeListener = <T = any>(event: { event: T; request: IncomingRequest; }) => void
 
 export interface UAEventMap {
-  connecting: UAConnectingListener;
+  connecting: ConnectingListener;
   connected: ConnectedListener;
   disconnected: DisconnectedListener;
   registered: RegisteredListener;
   unregistered: UnRegisteredListener;
   registrationFailed: RegistrationFailedListener;
-  registrationExpiring: AnyListener;
+  registrationExpiring: Listener;
   newRTCSession: RTCSessionListener;
   newMessage: MessageListener;
   sipEvent: SipEventListener;
   newSubscribe: SipSubscribeListener;
+  newOptions: OptionsListener;
 }
 
 export interface UAContactOptions {

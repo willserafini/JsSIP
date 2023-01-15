@@ -1,5 +1,4 @@
-/// <reference types="node" />
-import {EventEmitter} from 'events'
+import {EventEmitter, Listener} from 'events'
 
 import {IncomingRequest, IncomingResponse, OutgoingRequest} from './SIPMessage'
 import {NameAddrHeader} from './NameAddrHeader'
@@ -14,12 +13,12 @@ interface RTCPeerConnectionDeprecated extends RTCPeerConnection {
   getRemoteStreams(): MediaStream[];
 }
 
-export enum SessionDirection {
+export declare enum SessionDirection {
   INCOMING = 'incoming',
   OUTGOING = 'outgoing',
 }
 
-export enum Originator {
+export declare enum Originator {
   LOCAL = 'local',
   REMOTE = 'remote',
   SYSTEM = 'system',
@@ -165,17 +164,28 @@ export interface IceCandidateEvent {
 
 export interface OutgoingEvent {
   originator: Originator.REMOTE;
-  response: IncomingResponse
+  response: IncomingResponse;
+}
+
+export interface OutgoingAckEvent {
+  originator: Originator.LOCAL;
+}
+
+export interface IncomingAckEvent {
+  originator: Originator.REMOTE;
+  ack: IncomingRequest;
 }
 
 // listener
-export type AnyListener = (...args: any[]) => void;
 export type PeerConnectionListener = (event: PeerConnectionEvent) => void;
 export type ConnectingListener = (event: ConnectingEvent) => void;
 export type SendingListener = (event: SendingEvent) => void;
 export type IncomingListener = (event: IncomingEvent) => void;
 export type OutgoingListener = (event: OutgoingEvent) => void;
+export type IncomingConfirmedListener = (event: IncomingAckEvent) => void;
+export type OutgoingConfirmedListener = (event: OutgoingAckEvent) => void;
 export type CallListener = IncomingListener | OutgoingListener;
+export type ConfirmedListener = IncomingConfirmedListener | OutgoingConfirmedListener;
 export type EndListener = (event: EndEvent) => void;
 export type IncomingDTMFListener = (event: IncomingDTMFEvent) => void;
 export type OutgoingDTMFListener = (event: OutgoingDTMFEvent) => void;
@@ -197,7 +207,7 @@ export interface RTCSessionEventMap {
   'sending': SendingListener;
   'progress': CallListener;
   'accepted': CallListener;
-  'confirmed': CallListener;
+  'confirmed': ConfirmedListener;
   'ended': EndListener;
   'failed': EndListener;
   'newDTMF': DTMFListener;
@@ -212,11 +222,11 @@ export interface RTCSessionEventMap {
   'replaces': ReferListener;
   'sdp': SDPListener;
   'icecandidate': IceCandidateListener;
-  'getusermediafailed': AnyListener;
-  'peerconnection:createofferfailed': AnyListener;
-  'peerconnection:createanswerfailed': AnyListener;
-  'peerconnection:setlocaldescriptionfailed': AnyListener;
-  'peerconnection:setremotedescriptionfailed': AnyListener;
+  'getusermediafailed': Listener;
+  'peerconnection:createofferfailed': Listener;
+  'peerconnection:createanswerfailed': Listener;
+  'peerconnection:setlocaldescriptionfailed': Listener;
+  'peerconnection:setremotedescriptionfailed': Listener;
 }
 
 declare enum SessionStatus {
